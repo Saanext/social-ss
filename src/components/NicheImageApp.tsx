@@ -1,7 +1,9 @@
+
 'use client';
 
 import { useState } from 'react';
 import { NICHES, type Niche } from '@/config/niches';
+import { IMAGE_STYLES, type ImageStyle } from '@/config/styles';
 import { useToast } from '@/hooks/use-toast';
 import { handleSuggestPrompt, handleGenerateImage } from '@/lib/actions';
 
@@ -16,6 +18,11 @@ export default function NicheImageApp() {
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
+  
+  const [hookText, setHookText] = useState('');
+  const [contentText, setContentText] = useState('');
+  const [selectedStyle, setSelectedStyle] = useState<ImageStyle | null>(IMAGE_STYLES[0] || null);
+
   const { toast } = useToast();
 
   const handleNicheSelect = (niche: Niche) => {
@@ -23,6 +30,10 @@ export default function NicheImageApp() {
     setSuggestedPrompt(null);
     setGeneratedImageUrl(null);
     setUserPrompt('');
+    setHookText('');
+    setContentText('');
+    // Optionally reset style or keep it
+    // setSelectedStyle(IMAGE_STYLES[0] || null); 
   };
 
   const onSuggestPrompt = async () => {
@@ -43,6 +54,8 @@ export default function NicheImageApp() {
     if (!selectedNiche || !userPrompt) return;
     setIsLoadingImage(true);
     setGeneratedImageUrl(null);
+    // For now, hookText, contentText, and selectedStyle are not passed to the generation flow
+    // This will be updated if the AI flow needs to use them.
     try {
       const result = await handleGenerateImage({ niche: selectedNiche.name, prompt: userPrompt });
       setGeneratedImageUrl(result.imageUrl);
@@ -65,7 +78,7 @@ export default function NicheImageApp() {
       filename = selectedNiche.name.toLowerCase().replace(/\s+/g, '-') + '-image';
     }
     
-    link.download = `${filename}.png`; // Assuming AI generates PNG or browser can handle conversion
+    link.download = `${filename}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -91,6 +104,13 @@ export default function NicheImageApp() {
         onGenerateImage={onGenerateImage}
         isLoadingSuggestion={isLoadingSuggestion}
         isLoadingImage={isLoadingImage}
+        hookText={hookText}
+        setHookText={setHookText}
+        contentText={contentText}
+        setContentText={setContentText}
+        styles={IMAGE_STYLES}
+        selectedStyle={selectedStyle}
+        setSelectedStyle={setSelectedStyle}
       />
 
       <GeneratedImage
@@ -99,6 +119,9 @@ export default function NicheImageApp() {
         isLoading={isLoadingImage}
         onDownload={handleDownloadImage}
         nicheName={selectedNiche?.name}
+        hookText={hookText}
+        contentText={contentText}
+        selectedStyleName={selectedStyle?.name || null}
       />
     </div>
   );

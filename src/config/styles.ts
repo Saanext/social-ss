@@ -1,0 +1,16 @@
+
+export interface ImageStyle {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export const IMAGE_STYLES: ImageStyle[] = [
+  { id: 'photorealistic', name: 'Photorealistic', description: 'Aim for a realistic, photo-like quality.' },
+  { id: 'cartoon', name: 'Cartoon', description: 'A stylized, animated, or comic-book appearance.' },
+  { id: 'impressionistic', name: 'Impressionistic', description: 'Artistic style focusing on light and color over detail.' },
+  { id: 'abstract', name: 'Abstract', description: 'Non-representational, focusing on shapes, colors, and textures.' },
+  { id: 'minimalist', name: 'Minimalist', description: 'Simple, clean, and uncluttered design.' },
+  { id: 'surreal', name: 'Surreal', description: 'Dreamlike, bizarre, and fantastical imagery.' },
+  { id: 'vintage', name: 'Vintage', description: 'Retro or old-fashioned aesthetic.' },
+];
