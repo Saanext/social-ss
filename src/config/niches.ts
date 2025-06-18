@@ -1,4 +1,5 @@
-import { CodeXmlIcon, TargetIcon, BrainCircuitIcon, LucideIcon } from 'lucide-react';
+
+import { CodeXmlIcon, TargetIcon, BrainCircuitIcon, FlameIcon, type LucideIcon } from 'lucide-react';
 
 export interface Niche {
   id: string;
@@ -29,5 +30,12 @@ export const NICHES: Niche[] = [
     icon: BrainCircuitIcon,
     description: 'Illustrate complex AI concepts and futuristic technology.',
     promptHint: 'e.g., "neural network visualization", "AI robot assistant"',
+  },
+  {
+    id: 'motivation',
+    name: 'Motivation & Inspiration',
+    icon: FlameIcon,
+    description: "Fuel ambition with powerful visuals for drive, success, and an 'alpha' mindset.",
+    promptHint: 'e.g., "alpha male silhouette sunrise", "inspirational quote on epic background", "person overcoming adversity"',
   },
 ];
