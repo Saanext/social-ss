@@ -37,20 +37,22 @@ const generateImageFlow = ai.defineFlow(
     outputSchema: GenerateImageOutputSchema,
   },
   async (input) => {
-    let constructedPrompt = `Generate a visually appealing image suitable for the niche '${input.niche}', based on the post idea: "${input.postIdea}".`;
+    let textElementsInstruction = "";
+    if (input.hookText && input.contentText) {
+      textElementsInstruction = `The image must visually represent or incorporate the themes from the following hook: "${input.hookText}" and content: "${input.contentText}".`;
+    } else if (input.hookText) {
+      textElementsInstruction = `The image must visually represent or incorporate the theme from the following hook: "${input.hookText}".`;
+    } else if (input.contentText) {
+      textElementsInstruction = `The image must visually represent or incorporate the theme from the following content: "${input.contentText}".`;
+    }
+    
+    let constructedPrompt = `Generate a visually appealing image suitable for the niche '${input.niche}', based on the post idea: "${input.postIdea}". ${textElementsInstruction}`;
     
     if (input.imageStyleName) {
       constructedPrompt += ` The image should be in a '${input.imageStyleName}' style.`;
     }
-
-    if (input.hookText) {
-      constructedPrompt += ` Try to visually incorporate or represent the theme of this hook: "${input.hookText}".`;
-    }
-    if (input.contentText) {
-      constructedPrompt += ` Also, consider the essence of this content: "${input.contentText}".`;
-    }
     
-    constructedPrompt += ` Focus on clarity, engagement, and relevance to the post idea. If text is explicitly mentioned (hook or content), attempt to integrate it naturally into the image if the style allows, otherwise represent its theme visually.`;
+    constructedPrompt += ` Focus on clarity, engagement, and relevance to the post idea. If text elements (hook or content) are provided, the image should strongly attempt to integrate them naturally into the visual design or prominently represent their core themes.`;
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-exp',
