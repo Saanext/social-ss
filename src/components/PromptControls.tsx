@@ -7,19 +7,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Loader2, Wand2, Lightbulb, ThumbsUp, MessageSquareText, Palette, SparklesIcon } from 'lucide-react';
+import { Loader2, Wand2, ThumbsUp, MessageSquareText, Palette, SparklesIcon } from 'lucide-react'; // Removed Lightbulb
 import type { Niche } from '@/config/niches';
 import type { ImageStyle } from '@/config/styles';
 import { Separator } from '@/components/ui/separator';
 
 interface PromptControlsProps {
   selectedNiche: Niche | null;
-  userPrompt: string;
-  setUserPrompt: (prompt: string) => void;
-  suggestedPrompt: string | null;
-  onSuggestPrompt: () => Promise<void>;
+  // userPrompt, setUserPrompt, suggestedPrompt, onSuggestPrompt, isLoadingSuggestion removed
   onGenerateImage: () => Promise<void>;
-  isLoadingSuggestion: boolean;
   isLoadingImage: boolean;
 
   postIdea: string;
@@ -37,12 +33,8 @@ interface PromptControlsProps {
 
 export default function PromptControls({
   selectedNiche,
-  userPrompt,
-  setUserPrompt,
-  suggestedPrompt,
-  onSuggestPrompt,
+  // userPrompt, setUserPrompt, suggestedPrompt, onSuggestPrompt, isLoadingSuggestion removed
   onGenerateImage,
-  isLoadingSuggestion,
   isLoadingImage,
   postIdea,
   setPostIdea,
@@ -56,9 +48,9 @@ export default function PromptControls({
   onGenerateHookContent,
   isLoadingHookContent,
 }: PromptControlsProps) {
-  const anyLoading = isLoadingImage || isLoadingSuggestion || isLoadingHookContent;
-  const canSuggestCorePrompt = selectedNiche !== null && !anyLoading;
-  const canGenerateImage = selectedNiche !== null && userPrompt.trim() !== '' && !anyLoading;
+  const anyLoading = isLoadingImage || isLoadingHookContent; // isLoadingSuggestion removed
+  // canSuggestCorePrompt removed
+  const canGenerateImage = selectedNiche !== null && postIdea.trim() !== '' && !anyLoading; // Depends on postIdea now
   const canGenerateHookContent = selectedNiche !== null && postIdea.trim() !== '' && !anyLoading;
 
   const handleStyleChange = (styleId: string) => {
@@ -73,75 +65,28 @@ export default function PromptControls({
           <Wand2 className="mr-3 h-7 w-7" /> Craft Your Vision
         </CardTitle>
         <CardDescription>
-          {selectedNiche ? `Enter a core prompt for ${selectedNiche.name}, or let us suggest one. Then, optionally add a post idea for AI-generated hook & content, and choose an image style.` : 'Select a niche above to get started.'}
+          {selectedNiche ? `Enter a post idea for ${selectedNiche.name}. We'll use this to generate AI hook & content, and the image. Then, choose an image style.` : 'Select a niche above to get started.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div>
-          <Label htmlFor="userPrompt" className="block text-sm font-medium text-foreground mb-1">
-            Core Image Prompt
-          </Label>
-          <Textarea
-            id="userPrompt"
-            placeholder={selectedNiche ? selectedNiche.promptHint : 'Describe the core visual elements of the image...'}
-            value={userPrompt}
-            onChange={(e) => setUserPrompt(e.target.value)}
-            rows={3}
-            className="focus:ring-accent focus:border-accent"
-            disabled={!selectedNiche || anyLoading}
-            aria-label="Core image prompt"
-          />
-        </div>
-
-        {suggestedPrompt && !isLoadingSuggestion && (
-          <Card className="bg-primary/5 border-primary/20">
-            <CardContent className="p-4 space-y-3">
-              <p className="text-sm font-medium text-primary">Suggested Core Prompt:</p>
-              <p className="text-sm text-foreground italic">"{suggestedPrompt}"</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setUserPrompt(suggestedPrompt)}
-                disabled={anyLoading}
-              >
-                Use this prompt
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-        
-        <Button
-          onClick={onSuggestPrompt}
-          disabled={!canSuggestCorePrompt}
-          variant="outline"
-          className="w-full sm:w-auto"
-          aria-label="Suggest a core prompt"
-        >
-          {isLoadingSuggestion ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Lightbulb className="mr-2 h-4 w-4" />
-          )}
-          Suggest Core Prompt
-        </Button>
-
-        <Separator />
-
-        <div>
           <Label htmlFor="postIdea" className="block text-sm font-medium text-foreground mb-1">
-            Post Idea (for AI Hook & Content)
+            Post Idea (Drives AI Content & Image)
           </Label>
           <Textarea
             id="postIdea"
-            placeholder="e.g., 'The future of AI in web design', 'How to triple your leads in 30 days'"
+            placeholder={selectedNiche ? `e.g., For ${selectedNiche.name}: 'The impact of quantum computing on data security'` : "e.g., 'The future of AI in web design', 'How to triple your leads in 30 days'"}
             value={postIdea}
             onChange={(e) => setPostIdea(e.target.value)}
-            rows={2}
+            rows={3} // Increased rows for better visibility
             className="focus:ring-accent focus:border-accent"
             disabled={!selectedNiche || anyLoading}
-            aria-label="Post idea for AI hook and content generation"
+            aria-label="Post idea for AI hook, content, and image generation"
           />
         </div>
+        
+        {/* Core Image Prompt Textarea and Suggestion logic removed */}
+
         <Button
             onClick={onGenerateHookContent}
             disabled={!canGenerateHookContent}
@@ -167,7 +112,7 @@ export default function PromptControls({
         <Separator />
         
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-foreground">Additional Details (for Image & Preview)</h3>
+          <h3 className="text-lg font-medium text-foreground">Refine Details (for Image & Preview)</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label htmlFor="hookText" className="flex items-center text-sm font-medium text-foreground">
@@ -175,7 +120,7 @@ export default function PromptControls({
               </Label>
               <Input
                 id="hookText"
-                placeholder="e.g., Catchy headline..."
+                placeholder="e.g., Catchy headline (AI can generate this)"
                 value={hookText}
                 onChange={(e) => setHookText(e.target.value)}
                 className="focus:ring-accent focus:border-accent"
@@ -207,17 +152,17 @@ export default function PromptControls({
           </div>
           <div className="space-y-1">
             <Label htmlFor="contentText" className="flex items-center text-sm font-medium text-foreground">
-              <MessageSquareText className="mr-2 h-4 w-4 text-muted-foreground" /> Content Text
+              <MessageSquareText className="mr-2 h-4 w-4 text-muted-foreground" /> Content Text (Short & Catchy for Instagram)
             </Label>
             <Textarea
               id="contentText"
-              placeholder="e.g., Supporting details or a short paragraph..."
+              placeholder="e.g., Supporting details (AI can generate this for Instagram)"
               value={contentText}
               onChange={(e) => setContentText(e.target.value)}
               rows={3}
               className="focus:ring-accent focus:border-accent"
               disabled={!selectedNiche || anyLoading}
-              aria-label="Content text"
+              aria-label="Content text for Instagram"
             />
           </div>
         </div>
@@ -225,7 +170,7 @@ export default function PromptControls({
       <CardFooter className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
         <Button
           onClick={onGenerateImage}
-          disabled={!canGenerateImage}
+          disabled={!canGenerateImage} // Now depends on postIdea
           className="w-full sm:w-auto bg-accent hover:bg-accent/80 text-accent-foreground"
           aria-label="Generate image"
         >

@@ -5,6 +5,8 @@ import { suggestPrompt as suggestPromptFlow, SuggestPromptInput, SuggestPromptOu
 import { generateImage as generateImageFlow, GenerateImageInput, GenerateImageOutput } from '@/ai/flows/generate-image';
 import { generateHookContent as generateHookContentFlow, GenerateHookContentInput, GenerateHookContentOutput } from '@/ai/flows/generate-hook-content-flow';
 
+// This function is no longer used as core prompt is removed from UI.
+// Consider removing if not needed elsewhere.
 export async function handleSuggestPrompt(input: SuggestPromptInput): Promise<SuggestPromptOutput> {
   try {
     const result = await suggestPromptFlow(input);

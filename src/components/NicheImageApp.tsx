@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { NICHES, type Niche } from '@/config/niches';
 import { IMAGE_STYLES, type ImageStyle } from '@/config/styles';
 import { useToast } from '@/hooks/use-toast';
-import { handleSuggestPrompt, handleGenerateImage, handleGenerateHookContent } from '@/lib/actions';
+import { handleGenerateImage, handleGenerateHookContent } from '@/lib/actions'; // Removed handleSuggestPrompt
 
 import NicheSelector from './NicheSelector';
 import PromptControls from './PromptControls';
@@ -13,10 +13,7 @@ import GeneratedImage from './GeneratedImage';
 
 export default function NicheImageApp() {
   const [selectedNiche, setSelectedNiche] = useState<Niche | null>(null);
-  const [userPrompt, setUserPrompt] = useState('');
-  const [suggestedPrompt, setSuggestedPrompt] = useState<string | null>(null);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
-  const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   
   const [postIdea, setPostIdea] = useState('');
@@ -30,27 +27,14 @@ export default function NicheImageApp() {
 
   const handleNicheSelect = (niche: Niche) => {
     setSelectedNiche(niche);
-    setSuggestedPrompt(null);
     setGeneratedImageUrl(null);
-    setUserPrompt('');
     setPostIdea('');
     setHookText('');
     setContentText('');
+    // No userPrompt or suggestedPrompt to reset
   };
 
-  const onSuggestPrompt = async () => {
-    if (!selectedNiche) return;
-    setIsLoadingSuggestion(true);
-    setSuggestedPrompt(null);
-    try {
-      const result = await handleSuggestPrompt({ niche: selectedNiche.name });
-      setSuggestedPrompt(result.promptSuggestion);
-    } catch (error) {
-      toast({ variant: 'destructive', title: 'Error Suggesting Prompt', description: (error as Error).message });
-    } finally {
-      setIsLoadingSuggestion(false);
-    }
-  };
+  // onSuggestPrompt and related state (isLoadingSuggestion, suggestedPrompt) are removed
 
   const onGenerateHookContent = async () => {
     if (!postIdea || !selectedNiche) {
@@ -70,11 +54,18 @@ export default function NicheImageApp() {
   };
 
   const onGenerateImage = async () => {
-    if (!selectedNiche || !userPrompt) return;
+    if (!selectedNiche || !postIdea) {
+      toast({ variant: 'destructive', title: 'Missing Information', description: 'Please select a niche and enter a post idea to generate an image.' });
+      return;
+    }
     setIsLoadingImage(true);
     setGeneratedImageUrl(null);
     try {
-      const result = await handleGenerateImage({ niche: selectedNiche.name, prompt: userPrompt });
+      const result = await handleGenerateImage({ 
+        niche: selectedNiche.name, 
+        postIdea: postIdea,
+        imageStyleName: selectedStyle?.name 
+      });
       setGeneratedImageUrl(result.imageUrl);
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error Generating Image', description: (error as Error).message });
@@ -89,8 +80,8 @@ export default function NicheImageApp() {
     link.href = generatedImageUrl;
     
     let filename = 'generated-image';
-    if (userPrompt) {
-      filename = userPrompt.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').substring(0, 50) || 'custom-image';
+    if (postIdea) { // Use postIdea for filename
+      filename = postIdea.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').substring(0, 50) || 'custom-image';
     } else if (selectedNiche) {
       filename = selectedNiche.name.toLowerCase().replace(/\s+/g, '-') + '-image';
     }
@@ -101,7 +92,7 @@ export default function NicheImageApp() {
     document.body.removeChild(link);
   };
   
-  const anyLoading = isLoadingImage || isLoadingSuggestion || isLoadingHookContent;
+  const anyLoading = isLoadingImage || isLoadingHookContent; // Removed isLoadingSuggestion
 
   return (
     <div className="w-full max-w-4xl space-y-8">
@@ -114,12 +105,10 @@ export default function NicheImageApp() {
 
       <PromptControls
         selectedNiche={selectedNiche}
-        userPrompt={userPrompt}
-        setUserPrompt={setUserPrompt}
-        suggestedPrompt={suggestedPrompt}
-        onSuggestPrompt={onSuggestPrompt}
+        // userPrompt and setUserPrompt removed
+        // suggestedPrompt and onSuggestPrompt removed
+        // isLoadingSuggestion removed
         onGenerateImage={onGenerateImage}
-        isLoadingSuggestion={isLoadingSuggestion}
         isLoadingImage={isLoadingImage}
         
         postIdea={postIdea}
@@ -137,7 +126,7 @@ export default function NicheImageApp() {
 
       <GeneratedImage
         imageUrl={generatedImageUrl}
-        altText={userPrompt || 'AI generated image'}
+        altText={postIdea || 'AI generated image based on post idea'} // Updated altText
         isLoading={isLoadingImage}
         onDownload={handleDownloadImage}
         nicheName={selectedNiche?.name}

@@ -19,7 +19,7 @@ export type GenerateHookContentInput = z.infer<typeof GenerateHookContentInputSc
 
 const GenerateHookContentOutputSchema = z.object({
   hook: z.string().describe('A catchy hook generated based on the post idea.'),
-  content: z.string().describe('A short piece of content (2-3 sentences) generated based on the post idea.'),
+  content: z.string().describe('Very short and catchy content (1-2 sentences) suitable for an Instagram post, generated based on the post idea.'),
 });
 export type GenerateHookContentOutput = z.infer<typeof GenerateHookContentOutputSchema>;
 
@@ -31,15 +31,15 @@ const prompt = ai.definePrompt({
   name: 'generateHookContentPrompt',
   input: {schema: GenerateHookContentInputSchema},
   output: {schema: GenerateHookContentOutputSchema},
-  prompt: `You are a creative content assistant.
+  prompt: `You are a creative content assistant specializing in Instagram posts.
 {{#if niche}}
-You are specializing in content for the '{{{niche}}}' niche.
+You are focusing on content for the '{{{niche}}}' niche.
 {{/if}}
-Based on the following post idea, generate a catchy hook and a short piece of content (around 2-3 sentences) suitable for a social media post or a brief article.
+Based on the following post idea, generate a catchy hook and very short, catchy content (1-2 sentences) suitable for an Instagram post.
 
 Post Idea: {{{postIdea}}}
 
-Output the hook and content in the specified format. Ensure the hook is engaging and the content is concise and relevant.`,
+Output the hook and content in the specified format. Ensure the hook is engaging and the content is concise, catchy, and Instagram-ready.`,
 });
 
 const generateHookContentFlow = ai.defineFlow(

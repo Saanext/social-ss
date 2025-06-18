@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 interface GeneratedImageProps {
   imageUrl: string | null;
-  altText: string;
+  altText: string; // This will now be based on postIdea or similar
   isLoading: boolean;
   onDownload: () => void;
   nicheName?: string;
@@ -71,7 +71,7 @@ export default function GeneratedImage({
               )}
               {contentText && (
                 <div className="mb-2">
-                  <span className="text-xs font-medium uppercase text-muted-foreground">Content</span>
+                  <span className="text-xs font-medium uppercase text-muted-foreground">Content (Instagram)</span>
                   <p className="text-sm text-foreground whitespace-pre-wrap">{contentText}</p>
                 </div>
               )}
@@ -79,7 +79,7 @@ export default function GeneratedImage({
                  <p className="text-sm text-muted-foreground">Enter details above to see a preview.</p>
               )}
               <p className="text-xs text-muted-foreground/80 mt-4 pt-2 border-t border-dashed">
-                This is a text-based preview. The actual image will be generated based on your core prompt and selected options.
+                This is a text-based preview. The actual image will be generated based on your post idea and selected options.
               </p>
             </div>
           )}
@@ -87,7 +87,7 @@ export default function GeneratedImage({
             <div className="w-full h-full flex flex-col items-center justify-center text-center p-4">
                <ImageOff className="w-24 h-24 text-muted-foreground/50 mb-4" />
                <p className="text-lg font-medium text-muted-foreground">Your Image Will Appear Here</p>
-               <p className="text-sm text-muted-foreground">Select a niche and provide a prompt to generate an image.</p>
+               <p className="text-sm text-muted-foreground">Select a niche and provide a post idea to generate an image.</p>
                <Image 
                 src={`https://placehold.co/600x400.png`} 
                 alt="Placeholder image before generation" 
