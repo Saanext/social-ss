@@ -19,7 +19,7 @@ export type GenerateHookContentInput = z.infer<typeof GenerateHookContentInputSc
 
 const GenerateHookContentOutputSchema = z.object({
   hook: z.string().describe('A catchy hook generated based on the post idea.'),
-  content: z.string().describe('Very short and catchy content (1-2 sentences) suitable for an Instagram post, generated based on the post idea.'),
+  content: z.string().describe('Extremely concise and impactful content (ideally a single sentence or short phrase) for an Instagram post, based on the post idea.'),
 });
 export type GenerateHookContentOutput = z.infer<typeof GenerateHookContentOutputSchema>;
 
@@ -31,15 +31,19 @@ const prompt = ai.definePrompt({
   name: 'generateHookContentPrompt',
   input: {schema: GenerateHookContentInputSchema},
   output: {schema: GenerateHookContentOutputSchema},
-  prompt: `You are a creative content assistant specializing in Instagram posts.
+  prompt: `You are a creative content assistant specializing in crafting viral Instagram posts.
 {{#if niche}}
 You are focusing on content for the '{{{niche}}}' niche.
 {{/if}}
-Based on the following post idea, generate a catchy hook and very short, catchy content (1-2 sentences) suitable for an Instagram post.
+Based on the following post idea, generate:
+1. A highly engaging and catchy hook.
+2. Extremely concise and impactful content (ideally a single impactful sentence or a very short phrase) perfectly suited for an Instagram caption that grabs attention immediately.
 
 Post Idea: {{{postIdea}}}
 
-Output the hook and content in the specified format. Ensure the hook is engaging and the content is concise, catchy, and Instagram-ready.`,
+Output the hook and content in the specified format.
+Ensure the hook is attention-grabbing and the content is ultra-short, powerful, and Instagram-ready.
+Aim for maximum impact with minimal words for the content.`,
 });
 
 const generateHookContentFlow = ai.defineFlow(
@@ -53,3 +57,4 @@ const generateHookContentFlow = ai.defineFlow(
     return output!;
   }
 );
+
