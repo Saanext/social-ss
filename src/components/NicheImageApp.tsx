@@ -64,7 +64,9 @@ export default function NicheImageApp() {
       const result = await handleGenerateImage({ 
         niche: selectedNiche.name, 
         postIdea: postIdea,
-        imageStyleName: selectedStyle?.name 
+        imageStyleName: selectedStyle?.name,
+        hookText: hookText, // Pass hookText
+        contentText: contentText // Pass contentText
       });
       setGeneratedImageUrl(result.imageUrl);
     } catch (error) {
