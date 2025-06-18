@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { NICHES, type Niche } from '@/config/niches';
 import { IMAGE_STYLES, type ImageStyle } from '@/config/styles';
 import { useToast } from '@/hooks/use-toast';
-import { handleSuggestPrompt, handleGenerateImage } from '@/lib/actions';
+import { handleSuggestPrompt, handleGenerateImage, handleGenerateHookContent } from '@/lib/actions';
 
 import NicheSelector from './NicheSelector';
 import PromptControls from './PromptControls';
@@ -19,9 +19,12 @@ export default function NicheImageApp() {
   const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   
+  const [postIdea, setPostIdea] = useState('');
   const [hookText, setHookText] = useState('');
   const [contentText, setContentText] = useState('');
   const [selectedStyle, setSelectedStyle] = useState<ImageStyle | null>(IMAGE_STYLES[0] || null);
+  const [isLoadingHookContent, setIsLoadingHookContent] = useState(false);
+
 
   const { toast } = useToast();
 
@@ -30,10 +33,9 @@ export default function NicheImageApp() {
     setSuggestedPrompt(null);
     setGeneratedImageUrl(null);
     setUserPrompt('');
+    setPostIdea('');
     setHookText('');
     setContentText('');
-    // Optionally reset style or keep it
-    // setSelectedStyle(IMAGE_STYLES[0] || null); 
   };
 
   const onSuggestPrompt = async () => {
@@ -50,12 +52,27 @@ export default function NicheImageApp() {
     }
   };
 
+  const onGenerateHookContent = async () => {
+    if (!postIdea || !selectedNiche) {
+      toast({ variant: 'destructive', title: 'Missing Information', description: 'Please enter a post idea and select a niche to generate hook and content.' });
+      return;
+    }
+    setIsLoadingHookContent(true);
+    try {
+      const result = await handleGenerateHookContent({ postIdea, niche: selectedNiche.name });
+      setHookText(result.hook);
+      setContentText(result.content);
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error Generating Hook/Content', description: (error as Error).message });
+    } finally {
+      setIsLoadingHookContent(false);
+    }
+  };
+
   const onGenerateImage = async () => {
     if (!selectedNiche || !userPrompt) return;
     setIsLoadingImage(true);
     setGeneratedImageUrl(null);
-    // For now, hookText, contentText, and selectedStyle are not passed to the generation flow
-    // This will be updated if the AI flow needs to use them.
     try {
       const result = await handleGenerateImage({ niche: selectedNiche.name, prompt: userPrompt });
       setGeneratedImageUrl(result.imageUrl);
@@ -84,7 +101,7 @@ export default function NicheImageApp() {
     document.body.removeChild(link);
   };
   
-  const anyLoading = isLoadingImage || isLoadingSuggestion;
+  const anyLoading = isLoadingImage || isLoadingSuggestion || isLoadingHookContent;
 
   return (
     <div className="w-full max-w-4xl space-y-8">
@@ -104,6 +121,9 @@ export default function NicheImageApp() {
         onGenerateImage={onGenerateImage}
         isLoadingSuggestion={isLoadingSuggestion}
         isLoadingImage={isLoadingImage}
+        
+        postIdea={postIdea}
+        setPostIdea={setPostIdea}
         hookText={hookText}
         setHookText={setHookText}
         contentText={contentText}
@@ -111,6 +131,8 @@ export default function NicheImageApp() {
         styles={IMAGE_STYLES}
         selectedStyle={selectedStyle}
         setSelectedStyle={setSelectedStyle}
+        onGenerateHookContent={onGenerateHookContent}
+        isLoadingHookContent={isLoadingHookContent}
       />
 
       <GeneratedImage

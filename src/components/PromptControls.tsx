@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Loader2, Wand2, Lightbulb, ThumbsUp, MessageSquareText, Palette } from 'lucide-react';
+import { Loader2, Wand2, Lightbulb, ThumbsUp, MessageSquareText, Palette, SparklesIcon } from 'lucide-react';
 import type { Niche } from '@/config/niches';
 import type { ImageStyle } from '@/config/styles';
 import { Separator } from '@/components/ui/separator';
@@ -21,6 +21,9 @@ interface PromptControlsProps {
   onGenerateImage: () => Promise<void>;
   isLoadingSuggestion: boolean;
   isLoadingImage: boolean;
+
+  postIdea: string;
+  setPostIdea: (text: string) => void;
   hookText: string;
   setHookText: (text: string) => void;
   contentText: string;
@@ -28,6 +31,8 @@ interface PromptControlsProps {
   styles: ImageStyle[];
   selectedStyle: ImageStyle | null;
   setSelectedStyle: (style: ImageStyle | null) => void;
+  onGenerateHookContent: () => Promise<void>;
+  isLoadingHookContent: boolean;
 }
 
 export default function PromptControls({
@@ -39,6 +44,8 @@ export default function PromptControls({
   onGenerateImage,
   isLoadingSuggestion,
   isLoadingImage,
+  postIdea,
+  setPostIdea,
   hookText,
   setHookText,
   contentText,
@@ -46,10 +53,13 @@ export default function PromptControls({
   styles,
   selectedStyle,
   setSelectedStyle,
+  onGenerateHookContent,
+  isLoadingHookContent,
 }: PromptControlsProps) {
-  const anyLoading = isLoadingImage || isLoadingSuggestion;
-  const canSuggest = selectedNiche !== null && !anyLoading;
-  const canGenerate = selectedNiche !== null && userPrompt.trim() !== '' && !anyLoading;
+  const anyLoading = isLoadingImage || isLoadingSuggestion || isLoadingHookContent;
+  const canSuggestCorePrompt = selectedNiche !== null && !anyLoading;
+  const canGenerateImage = selectedNiche !== null && userPrompt.trim() !== '' && !anyLoading;
+  const canGenerateHookContent = selectedNiche !== null && postIdea.trim() !== '' && !anyLoading;
 
   const handleStyleChange = (styleId: string) => {
     const style = styles.find(s => s.id === styleId) || null;
@@ -63,7 +73,7 @@ export default function PromptControls({
           <Wand2 className="mr-3 h-7 w-7" /> Craft Your Vision
         </CardTitle>
         <CardDescription>
-          {selectedNiche ? `Enter a prompt for ${selectedNiche.name}, or let us suggest one. Then, add details like a hook, content, and style.` : 'Select a niche above to get started.'}
+          {selectedNiche ? `Enter a core prompt for ${selectedNiche.name}, or let us suggest one. Then, optionally add a post idea for AI-generated hook & content, and choose an image style.` : 'Select a niche above to get started.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -83,10 +93,81 @@ export default function PromptControls({
           />
         </div>
 
+        {suggestedPrompt && !isLoadingSuggestion && (
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="p-4 space-y-3">
+              <p className="text-sm font-medium text-primary">Suggested Core Prompt:</p>
+              <p className="text-sm text-foreground italic">"{suggestedPrompt}"</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setUserPrompt(suggestedPrompt)}
+                disabled={anyLoading}
+              >
+                Use this prompt
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+        
+        <Button
+          onClick={onSuggestPrompt}
+          disabled={!canSuggestCorePrompt}
+          variant="outline"
+          className="w-full sm:w-auto"
+          aria-label="Suggest a core prompt"
+        >
+          {isLoadingSuggestion ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Lightbulb className="mr-2 h-4 w-4" />
+          )}
+          Suggest Core Prompt
+        </Button>
+
         <Separator />
 
+        <div>
+          <Label htmlFor="postIdea" className="block text-sm font-medium text-foreground mb-1">
+            Post Idea (for AI Hook & Content)
+          </Label>
+          <Textarea
+            id="postIdea"
+            placeholder="e.g., 'The future of AI in web design', 'How to triple your leads in 30 days'"
+            value={postIdea}
+            onChange={(e) => setPostIdea(e.target.value)}
+            rows={2}
+            className="focus:ring-accent focus:border-accent"
+            disabled={!selectedNiche || anyLoading}
+            aria-label="Post idea for AI hook and content generation"
+          />
+        </div>
+        <Button
+            onClick={onGenerateHookContent}
+            disabled={!canGenerateHookContent}
+            variant="outline"
+            className="w-full sm:w-auto"
+            aria-label="Generate hook and content with AI"
+        >
+            {isLoadingHookContent ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+                <SparklesIcon className="mr-2 h-4 w-4" />
+            )}
+            Generate Hook & Content (AI)
+        </Button>
+
+        {isLoadingHookContent && (
+          <div className="text-sm text-muted-foreground flex items-center">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            AI is drafting your hook & content...
+          </div>
+        )}
+
+        <Separator />
+        
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-foreground">Additional Details (for Preview)</h3>
+          <h3 className="text-lg font-medium text-foreground">Additional Details (for Image & Preview)</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label htmlFor="hookText" className="flex items-center text-sm font-medium text-foreground">
@@ -140,41 +221,11 @@ export default function PromptControls({
             />
           </div>
         </div>
-
-        {suggestedPrompt && !isLoadingSuggestion && (
-          <Card className="bg-primary/5 border-primary/20">
-            <CardContent className="p-4 space-y-3">
-              <p className="text-sm font-medium text-primary">Suggested Core Prompt:</p>
-              <p className="text-sm text-foreground italic">"{suggestedPrompt}"</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setUserPrompt(suggestedPrompt)}
-                disabled={anyLoading}
-              >
-                Use this prompt
-              </Button>
-            </CardContent>
-          </Card>
-        )}
       </CardContent>
       <CardFooter className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
         <Button
-          onClick={onSuggestPrompt}
-          disabled={!canSuggest}
-          className="w-full sm:w-auto bg-secondary hover:bg-secondary/80 text-secondary-foreground"
-          aria-label="Suggest a prompt"
-        >
-          {isLoadingSuggestion ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Lightbulb className="mr-2 h-4 w-4" />
-          )}
-          Suggest Core Prompt
-        </Button>
-        <Button
           onClick={onGenerateImage}
-          disabled={!canGenerate}
+          disabled={!canGenerateImage}
           className="w-full sm:w-auto bg-accent hover:bg-accent/80 text-accent-foreground"
           aria-label="Generate image"
         >
@@ -186,12 +237,6 @@ export default function PromptControls({
           Generate Image
         </Button>
       </CardFooter>
-        {isLoadingSuggestion && (
-          <div className="px-6 pb-6 text-sm text-muted-foreground flex items-center">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Getting suggestions...
-          </div>
-        )}
     </Card>
   );
 }
