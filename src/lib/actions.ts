@@ -20,14 +20,29 @@ export async function handleSuggestPrompt(input: SuggestPromptInput): Promise<Su
 
 export async function handleGenerateImage(input: GenerateImageInput): Promise<GenerateImageOutput> {
   try {
-    const result = await generateImageFlow(input);
+    // Ensure all properties of GenerateImageInput are passed, including optional ones
+    const result = await generateImageFlow({
+      niche: input.niche,
+      postIdea: input.postIdea,
+      imageStyleName: input.imageStyleName,
+      hookText: input.hookText,
+      contentText: input.contentText,
+      hookFontFamilyDescription: input.hookFontFamilyDescription,
+      contentFontFamilyDescription: input.contentFontFamilyDescription,
+    });
     if (!result.imageUrl) {
       throw new Error('Image generation returned no URL.');
     }
     return result;
   } catch (error) {
     console.error('Error generating image:', error);
-    throw new Error('Failed to generate image. Please try again.');
+    // It's good practice to re-throw or handle the error appropriately
+    // For now, re-throwing a generic error message for the client.
+    // Consider more specific error handling or logging for production.
+    if (error instanceof Error) {
+       throw new Error(`Failed to generate image: ${error.message}. Please try again.`);
+    }
+    throw new Error('Failed to generate image due to an unknown error. Please try again.');
   }
 }
 
@@ -37,7 +52,10 @@ export async function handleGenerateHookContent(input: GenerateHookContentInput)
     return result;
   } catch (error) {
     console.error('Error generating hook and content:', error);
-    throw new Error('Failed to generate hook and content. Please try again.');
+    if (error instanceof Error) {
+      throw new Error(`Failed to generate hook and content: ${error.message}. Please try again.`);
+    }
+    throw new Error('Failed to generate hook and content due to an unknown error. Please try again.');
   }
 }
 
@@ -47,6 +65,9 @@ export async function handleGenerateViralCaption(input: GenerateViralCaptionInpu
     return result;
   } catch (error) {
     console.error('Error generating viral caption:', error);
-    throw new Error('Failed to generate viral caption. Please try again.');
+     if (error instanceof Error) {
+      throw new Error(`Failed to generate viral caption: ${error.message}. Please try again.`);
+    }
+    throw new Error('Failed to generate viral caption due to an unknown error. Please try again.');
   }
 }

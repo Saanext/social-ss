@@ -4,13 +4,14 @@
 import { useState } from 'react';
 import { NICHES, type Niche } from '@/config/niches';
 import { IMAGE_STYLES, type ImageStyle } from '@/config/styles';
+import { FONT_STYLE_OPTIONS, DEFAULT_FONT_STYLE_ID, type FontStyleOption } from '@/config/fonts';
 import { useToast } from '@/hooks/use-toast';
 import { handleGenerateImage, handleGenerateHookContent, handleGenerateViralCaption } from '@/lib/actions'; 
 
 import NicheSelector from './NicheSelector';
 import PromptControls from './PromptControls';
 import GeneratedImage from './GeneratedImage';
-import ViralCaptionGenerator from './ViralCaptionGenerator'; // New component
+import ViralCaptionGenerator from './ViralCaptionGenerator';
 
 export default function NicheImageApp() {
   const [selectedNiche, setSelectedNiche] = useState<Niche | null>(null);
@@ -25,6 +26,9 @@ export default function NicheImageApp() {
 
   const [hookFontSize, setHookFontSize] = useState<number>(32);
   const [contentFontSize, setContentFontSize] = useState<number>(24);
+  const [hookFontFamilyId, setHookFontFamilyId] = useState<string>(DEFAULT_FONT_STYLE_ID);
+  const [contentFontFamilyId, setContentFontFamilyId] = useState<string>(DEFAULT_FONT_STYLE_ID);
+
 
   const [viralCaption, setViralCaption] = useState<string | null>(null);
   const [viralHashtags, setViralHashtags] = useState<string | null>(null);
@@ -35,9 +39,9 @@ export default function NicheImageApp() {
 
   const handleNicheSelect = (niche: Niche) => {
     setSelectedNiche(niche);
-    setGeneratedImageUrl(null); // Reset image if niche changes
-    setViralCaption(null); // Reset caption if niche changes
-    setViralHashtags(null); // Reset hashtags if niche changes
+    setGeneratedImageUrl(null); 
+    setViralCaption(null); 
+    setViralHashtags(null); 
     setPostIdea('');
     setHookText('');
     setContentText('');
@@ -49,8 +53,8 @@ export default function NicheImageApp() {
       return;
     }
     setIsLoadingHookContent(true);
-    setHookText(''); // Clear previous
-    setContentText(''); // Clear previous
+    setHookText(''); 
+    setContentText(''); 
     try {
       const result = await handleGenerateHookContent({ postIdea, niche: selectedNiche.name });
       setHookText(result.hook);
@@ -68,16 +72,22 @@ export default function NicheImageApp() {
       return;
     }
     setIsLoadingImage(true);
-    setGeneratedImageUrl(null); // Clear previous image
-    setViralCaption(null); // Clear previous caption
-    setViralHashtags(null); // Clear previous hashtags
+    setGeneratedImageUrl(null); 
+    setViralCaption(null); 
+    setViralHashtags(null); 
+
+    const hookFont = FONT_STYLE_OPTIONS.find(f => f.id === hookFontFamilyId);
+    const contentFont = FONT_STYLE_OPTIONS.find(f => f.id === contentFontFamilyId);
+
     try {
       const result = await handleGenerateImage({ 
         niche: selectedNiche.name, 
         postIdea: postIdea,
         imageStyleName: selectedStyle?.name,
         hookText: hookText,
-        contentText: contentText
+        contentText: contentText,
+        hookFontFamilyDescription: hookFont?.aiDescription,
+        contentFontFamilyDescription: contentFont?.aiDescription,
       });
       setGeneratedImageUrl(result.imageUrl);
     } catch (error) {
@@ -132,6 +142,8 @@ export default function NicheImageApp() {
   };
   
   const anyLoading = isLoadingImage || isLoadingHookContent || isLoadingCaption;
+  const selectedHookFont = FONT_STYLE_OPTIONS.find(f => f.id === hookFontFamilyId) || FONT_STYLE_OPTIONS[0];
+  const selectedContentFont = FONT_STYLE_OPTIONS.find(f => f.id === contentFontFamilyId) || FONT_STYLE_OPTIONS[0];
 
   return (
     <div className="w-full max-w-4xl space-y-8">
@@ -158,10 +170,17 @@ export default function NicheImageApp() {
         setSelectedStyle={setSelectedStyle}
         onGenerateHookContent={onGenerateHookContent}
         isLoadingHookContent={isLoadingHookContent}
+        
         hookFontSize={hookFontSize}
         setHookFontSize={setHookFontSize}
         contentFontSize={contentFontSize}
         setContentFontSize={setContentFontSize}
+        
+        fontStyles={FONT_STYLE_OPTIONS}
+        hookFontFamilyId={hookFontFamilyId}
+        setHookFontFamilyId={setHookFontFamilyId}
+        contentFontFamilyId={contentFontFamilyId}
+        setContentFontFamilyId={setContentFontFamilyId}
       />
 
       <GeneratedImage
@@ -175,6 +194,8 @@ export default function NicheImageApp() {
         selectedStyleName={selectedStyle?.name || null}
         hookFontSize={hookFontSize}
         contentFontSize={contentFontSize}
+        hookFontFamilyClass={selectedHookFont.cssClass}
+        contentFontFamilyClass={selectedContentFont.cssClass}
       />
 
       {generatedImageUrl && !isLoadingImage && (
@@ -183,7 +204,7 @@ export default function NicheImageApp() {
           caption={viralCaption}
           hashtags={viralHashtags}
           isLoading={isLoadingCaption}
-          isDisabled={anyLoading && !isLoadingCaption} // Disable if other main ops are loading
+          isDisabled={anyLoading && !isLoadingCaption} 
         />
       )}
     </div>

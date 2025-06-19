@@ -18,6 +18,8 @@ const GenerateImageInputSchema = z.object({
   imageStyleName: z.string().optional().describe('The desired artistic style for the image (e.g., Photorealistic, Cartoon).'),
   hookText: z.string().optional().describe('Optional hook text to be prominently incorporated or represented in the image. Strive for perfect spelling and legibility if rendered.'),
   contentText: z.string().optional().describe('Optional content text to be incorporated or represented in the image, perhaps more subtly than the hook. Strive for perfect spelling and legibility if rendered.'),
+  hookFontFamilyDescription: z.string().optional().describe('A description of the desired font style for the hook text (e.g., "a clean, modern sans-serif font style").'),
+  contentFontFamilyDescription: z.string().optional().describe('A description of the desired font style for the content text (e.g., "a classic, elegant serif font style").'),
 });
 export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;
 
@@ -55,16 +57,27 @@ const generateImageFlow = ai.defineFlow(
         }
     }
 
+    let hookTextInstruction = "";
+    if (input.hookText) {
+        hookTextInstruction = ` The image should prominently feature or thematically represent the hook: "${input.hookText}".`;
+        if (input.hookFontFamilyDescription) {
+            hookTextInstruction += ` This hook text should ideally be rendered in ${input.hookFontFamilyDescription}.`;
+        }
+    }
 
-    if (input.hookText || input.contentText) {
-      if (input.hookText && input.contentText) {
-        textElementsInstruction = ` The image should prominently feature or thematically represent the hook: "${input.hookText}". It should also incorporate or represent the content: "${input.contentText}", perhaps more subtly.`;
-      } else if (input.hookText) {
-        textElementsInstruction = ` The image should prominently feature or thematically represent the hook: "${input.hookText}".`;
-      } else if (input.contentText) {
-        textElementsInstruction = ` The image should incorporate or thematically represent the content: "${input.contentText}".`;
+    let contentTextInstruction = "";
+    if (input.contentText) {
+        contentTextInstruction = ` It should also incorporate or represent the content: "${input.contentText}", perhaps more subtly.`;
+        if (input.contentFontFamilyDescription) {
+            contentTextInstruction += ` This content text should ideally be rendered in ${input.contentFontFamilyDescription}.`;
+        }
+    }
+
+    if (hookTextInstruction || contentTextInstruction) {
+      textElementsInstruction = `${hookTextInstruction}${contentTextInstruction}`;
+      if (!input.hookFontFamilyDescription && !input.contentFontFamilyDescription) {
+         textElementsInstruction += ` ${typographyStyleGuidance}`; // Apply general typography guidance if no specific font styles are given
       }
-      textElementsInstruction += ` ${typographyStyleGuidance}`;
     }
     
     let constructedPrompt = `Generate a visually appealing and engaging image suitable for an Instagram post (aim for a square 1:1 aspect ratio or a portrait 4:5 aspect ratio). The image should be relevant to the niche '${input.niche}' and the post idea: "${input.postIdea}".`;
@@ -77,7 +90,7 @@ const generateImageFlow = ai.defineFlow(
     
     constructedPrompt += textElementsInstruction;
     
-    constructedPrompt += ` CRITICALLY IMPORTANT: If text elements (hook or content) are provided, the image MUST attempt to integrate them. Strive for PERFECT SPELLING and HIGH LEGIBILITY of any rendered text. The text should be naturally and creatively incorporated into the visual design or prominently represent its core themes. If direct text rendering results in spelling errors, illegibility, or distortion, prioritize clear thematic representation of the text's message over poor quality text rendering. The final image must be high quality and visually compelling for online sharing.`;
+    constructedPrompt += ` CRITICALLY IMPORTANT: If text elements (hook or content) are provided, the image MUST attempt to integrate them. Strive for PERFECT SPELLING and HIGH LEGIBILITY of any rendered text. The text should be naturally and creatively incorporated into the visual design or prominently represent its core themes. If specific font style descriptions are provided, attempt to match those styles. If direct text rendering results in spelling errors, illegibility, or distortion, prioritize clear thematic representation of the text's message over poor quality text rendering. The final image must be high quality and visually compelling for online sharing.`;
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-exp',
@@ -98,4 +111,3 @@ const generateImageFlow = ai.defineFlow(
     };
   }
 );
-

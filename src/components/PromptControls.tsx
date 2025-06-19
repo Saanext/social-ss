@@ -7,9 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Loader2, Wand2, ThumbsUp, MessageSquareText, Palette, SparklesIcon, CaseSensitive } from 'lucide-react';
+import { Loader2, Wand2, ThumbsUp, MessageSquareText, Palette, SparklesIcon, CaseSensitive, Type } from 'lucide-react';
 import type { Niche } from '@/config/niches';
 import type { ImageStyle } from '@/config/styles';
+import type { FontStyleOption } from '@/config/fonts';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from "@/components/ui/slider";
 
@@ -35,6 +36,12 @@ interface PromptControlsProps {
   setHookFontSize: (size: number) => void;
   contentFontSize: number;
   setContentFontSize: (size: number) => void;
+
+  fontStyles: FontStyleOption[];
+  hookFontFamilyId: string;
+  setHookFontFamilyId: (id: string) => void;
+  contentFontFamilyId: string;
+  setContentFontFamilyId: (id: string) => void;
 }
 
 export default function PromptControls({
@@ -56,6 +63,11 @@ export default function PromptControls({
   setHookFontSize,
   contentFontSize,
   setContentFontSize,
+  fontStyles,
+  hookFontFamilyId,
+  setHookFontFamilyId,
+  contentFontFamilyId,
+  setContentFontFamilyId,
 }: PromptControlsProps) {
   const anyLoading = isLoadingImage || isLoadingHookContent;
   const canGenerateImage = selectedNiche !== null && postIdea.trim() !== '' && !anyLoading;
@@ -118,9 +130,9 @@ export default function PromptControls({
 
         <Separator />
         
-        <div className="space-y-6"> {/* Increased spacing for font size controls */}
+        <div className="space-y-6">
           <h3 className="text-lg font-medium text-foreground">Refine Details (for Image & Preview)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Increased gap */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="hookText" className="flex items-center text-sm font-medium text-foreground">
                 <ThumbsUp className="mr-2 h-4 w-4 text-muted-foreground" /> Hook Text
@@ -148,6 +160,27 @@ export default function PromptControls({
                   disabled={!selectedNiche || anyLoading}
                   aria-label="Hook font size"
                 />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="hookFontFamily" className="flex items-center text-xs font-medium text-muted-foreground">
+                  <Type className="mr-1 h-3 w-3" /> Hook Font Style
+                </Label>
+                <Select
+                  value={hookFontFamilyId}
+                  onValueChange={setHookFontFamilyId}
+                  disabled={!selectedNiche || anyLoading}
+                >
+                  <SelectTrigger id="hookFontFamily" className="w-full focus:ring-accent focus:border-accent" aria-label="Hook font family">
+                    <SelectValue placeholder="Select font style..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {fontStyles.map((font) => (
+                      <SelectItem key={font.id} value={font.id}>
+                        {font.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="space-y-2">
@@ -199,6 +232,27 @@ export default function PromptControls({
                   disabled={!selectedNiche || anyLoading}
                   aria-label="Content font size"
                 />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="contentFontFamily" className="flex items-center text-xs font-medium text-muted-foreground">
+                  <Type className="mr-1 h-3 w-3" /> Content Font Style
+                </Label>
+                <Select
+                  value={contentFontFamilyId}
+                  onValueChange={setContentFontFamilyId}
+                  disabled={!selectedNiche || anyLoading}
+                >
+                  <SelectTrigger id="contentFontFamily" className="w-full focus:ring-accent focus:border-accent" aria-label="Content font family">
+                    <SelectValue placeholder="Select font style..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {fontStyles.map((font) => (
+                      <SelectItem key={font.id} value={font.id}>
+                        {font.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
           </div>
         </div>

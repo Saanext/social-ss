@@ -16,9 +16,11 @@ interface GeneratedImageProps {
   nicheName?: string;
   hookText?: string;
   contentText?: string;
-  selectedStyleName?: string | null;
+  selectedStyleName?: string | null; // Still useful for placeholder hint
   hookFontSize: number;
   contentFontSize: number;
+  hookFontFamilyClass: string;
+  contentFontFamilyClass: string;
 }
 
 export default function GeneratedImage({ 
@@ -32,21 +34,11 @@ export default function GeneratedImage({
   selectedStyleName,
   hookFontSize,
   contentFontSize,
+  hookFontFamilyClass,
+  contentFontFamilyClass,
 }: GeneratedImageProps) {
   const placeholderHint = nicheName ? `tech ${nicheName.toLowerCase().replace(' ', '')}` : "digital art";
   const showTextPreviewCanvas = !isLoading && !imageUrl && (hookText || contentText);
-
-  let textPreviewFontFamilyClass = 'font-sans'; // Default to sans-serif
-
-  if (selectedStyleName) {
-    const styleLower = selectedStyleName.toLowerCase();
-    if (styleLower.includes('vintage') || styleLower.includes('impressionistic') || styleLower.includes('organic')) {
-      textPreviewFontFamilyClass = 'font-serif';
-    } else if (styleLower.includes('futuristic') || styleLower.includes('cyberpunk') || styleLower.includes('minimalist') || styleLower.includes('abstract')) {
-      textPreviewFontFamilyClass = 'font-mono'; // Monospace can give a techy/minimalist feel
-    }
-  }
-
 
   return (
     <Card className="w-full shadow-lg">
@@ -70,7 +62,7 @@ export default function GeneratedImage({
             />
           )}
           {showTextPreviewCanvas && (
-             <div className={cn("w-full h-full relative bg-gray-200 dark:bg-gray-700 flex flex-col items-center justify-between p-4 overflow-hidden", textPreviewFontFamilyClass)}>
+             <div className={cn("w-full h-full relative bg-gray-200 dark:bg-gray-700 flex flex-col items-center justify-between p-4 overflow-hidden")}>
                 <Image
                     src={`https://placehold.co/600x600.png?text=${selectedStyleName || nicheName || 'Preview'}`}
                     alt="Preview background"
@@ -79,23 +71,22 @@ export default function GeneratedImage({
                     className="opacity-20 dark:opacity-10 absolute inset-0"
                     data-ai-hint={`${selectedStyleName || ''} ${placeholderHint}`}
                 />
-                <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-8"> {/* Increased py for better spacing */}
+                <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-8">
                     {hookText && (
                     <div
                         style={{ fontSize: `${hookFontSize}px` }}
-                        className="p-2 bg-black/50 text-white rounded max-w-[90%] text-center break-words shadow-lg"
+                        className={cn("p-2 bg-black/50 text-white rounded max-w-[90%] text-center break-words shadow-lg", hookFontFamilyClass)}
                     >
                         {hookText}
                     </div>
                     )}
                     
-                    {/* This div pushes content text to the bottom if hook text is missing, or separates them if both exist */}
                     {(!hookText && contentText) || (hookText && contentText) ? <div className="flex-grow"></div> : null}
                     
                     {contentText && (
                     <div
                         style={{ fontSize: `${contentFontSize}px` }}
-                        className="p-2 bg-black/50 text-white rounded max-w-[90%] text-center break-words shadow-lg"
+                        className={cn("p-2 bg-black/50 text-white rounded max-w-[90%] text-center break-words shadow-lg", contentFontFamilyClass)}
                     >
                         {contentText}
                     </div>
@@ -133,4 +124,3 @@ export default function GeneratedImage({
     </Card>
   );
 }
-
