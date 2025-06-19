@@ -5,11 +5,12 @@ import { useState } from 'react';
 import { NICHES, type Niche } from '@/config/niches';
 import { IMAGE_STYLES, type ImageStyle } from '@/config/styles';
 import { useToast } from '@/hooks/use-toast';
-import { handleGenerateImage, handleGenerateHookContent } from '@/lib/actions'; 
+import { handleGenerateImage, handleGenerateHookContent, handleGenerateViralCaption } from '@/lib/actions'; 
 
 import NicheSelector from './NicheSelector';
 import PromptControls from './PromptControls';
 import GeneratedImage from './GeneratedImage';
+import ViralCaptionGenerator from './ViralCaptionGenerator'; // New component
 
 export default function NicheImageApp() {
   const [selectedNiche, setSelectedNiche] = useState<Niche | null>(null);
@@ -25,12 +26,18 @@ export default function NicheImageApp() {
   const [hookFontSize, setHookFontSize] = useState<number>(32);
   const [contentFontSize, setContentFontSize] = useState<number>(24);
 
+  const [viralCaption, setViralCaption] = useState<string | null>(null);
+  const [viralHashtags, setViralHashtags] = useState<string | null>(null);
+  const [isLoadingCaption, setIsLoadingCaption] = useState(false);
+
 
   const { toast } = useToast();
 
   const handleNicheSelect = (niche: Niche) => {
     setSelectedNiche(niche);
-    setGeneratedImageUrl(null);
+    setGeneratedImageUrl(null); // Reset image if niche changes
+    setViralCaption(null); // Reset caption if niche changes
+    setViralHashtags(null); // Reset hashtags if niche changes
     setPostIdea('');
     setHookText('');
     setContentText('');
@@ -42,6 +49,8 @@ export default function NicheImageApp() {
       return;
     }
     setIsLoadingHookContent(true);
+    setHookText(''); // Clear previous
+    setContentText(''); // Clear previous
     try {
       const result = await handleGenerateHookContent({ postIdea, niche: selectedNiche.name });
       setHookText(result.hook);
@@ -59,7 +68,9 @@ export default function NicheImageApp() {
       return;
     }
     setIsLoadingImage(true);
-    setGeneratedImageUrl(null);
+    setGeneratedImageUrl(null); // Clear previous image
+    setViralCaption(null); // Clear previous caption
+    setViralHashtags(null); // Clear previous hashtags
     try {
       const result = await handleGenerateImage({ 
         niche: selectedNiche.name, 
@@ -75,6 +86,32 @@ export default function NicheImageApp() {
       setIsLoadingImage(false);
     }
   };
+
+  const onGenerateViralCaptionSubmit = async () => {
+    if (!selectedNiche || !postIdea) {
+      toast({ variant: 'destructive', title: 'Context Missing', description: 'Cannot generate caption without niche and post idea.' });
+      return;
+    }
+    setIsLoadingCaption(true);
+    setViralCaption(null);
+    setViralHashtags(null);
+    try {
+      const result = await handleGenerateViralCaption({
+        postIdea,
+        niche: selectedNiche.name,
+        hookText,
+        contentText,
+        imageStyleName: selectedStyle?.name,
+      });
+      setViralCaption(result.viralCaption);
+      setViralHashtags(result.viralHashtags);
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Error Generating Caption', description: (error as Error).message });
+    } finally {
+      setIsLoadingCaption(false);
+    }
+  };
+
 
   const handleDownloadImage = () => {
     if (!generatedImageUrl) return;
@@ -94,7 +131,7 @@ export default function NicheImageApp() {
     document.body.removeChild(link);
   };
   
-  const anyLoading = isLoadingImage || isLoadingHookContent;
+  const anyLoading = isLoadingImage || isLoadingHookContent || isLoadingCaption;
 
   return (
     <div className="w-full max-w-4xl space-y-8">
@@ -139,6 +176,16 @@ export default function NicheImageApp() {
         hookFontSize={hookFontSize}
         contentFontSize={contentFontSize}
       />
+
+      {generatedImageUrl && !isLoadingImage && (
+        <ViralCaptionGenerator
+          onGenerate={onGenerateViralCaptionSubmit}
+          caption={viralCaption}
+          hashtags={viralHashtags}
+          isLoading={isLoadingCaption}
+          isDisabled={anyLoading && !isLoadingCaption} // Disable if other main ops are loading
+        />
+      )}
     </div>
   );
 }
