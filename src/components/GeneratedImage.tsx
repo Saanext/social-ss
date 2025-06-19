@@ -51,7 +51,7 @@ export default function GeneratedImage({
   return (
     <Card className="w-full shadow-lg">
       <CardContent className="p-6 flex flex-col items-center space-y-6">
-        <div className="w-full aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center relative">
+        <div className="w-full max-w-lg aspect-square bg-muted rounded-lg overflow-hidden flex items-center justify-center relative">
           {isLoading && (
             <div className="w-full h-full flex flex-col items-center justify-center space-y-2">
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -64,22 +64,22 @@ export default function GeneratedImage({
               src={imageUrl}
               alt={altText || "Generated image"}
               width={600}
-              height={400}
+              height={600}
               className="object-contain w-full h-full"
               priority 
             />
           )}
           {showTextPreviewCanvas && (
-             <div className={cn("w-full h-full relative bg-gray-200 dark:bg-gray-700 flex flex-col items-center justify-center p-4 overflow-hidden", textPreviewFontFamilyClass)}>
+             <div className={cn("w-full h-full relative bg-gray-200 dark:bg-gray-700 flex flex-col items-center justify-between p-4 overflow-hidden", textPreviewFontFamilyClass)}>
                 <Image
-                    src={`https://placehold.co/600x400.png?text=${selectedStyleName || nicheName || 'Preview'}`}
+                    src={`https://placehold.co/600x600.png?text=${selectedStyleName || nicheName || 'Preview'}`}
                     alt="Preview background"
                     layout="fill"
                     objectFit="cover"
                     className="opacity-20 dark:opacity-10 absolute inset-0"
                     data-ai-hint={`${selectedStyleName || ''} ${placeholderHint}`}
                 />
-                <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-4"> 
+                <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-8"> {/* Increased py for better spacing */}
                     {hookText && (
                     <div
                         style={{ fontSize: `${hookFontSize}px` }}
@@ -89,8 +89,8 @@ export default function GeneratedImage({
                     </div>
                     )}
                     
-                    {hookText && !contentText && <div className="flex-grow"></div>}
-                    {!hookText && contentText && <div className="flex-grow"></div>}
+                    {/* This div pushes content text to the bottom if hook text is missing, or separates them if both exist */}
+                    {(!hookText && contentText) || (hookText && contentText) ? <div className="flex-grow"></div> : null}
                     
                     {contentText && (
                     <div
@@ -110,11 +110,11 @@ export default function GeneratedImage({
                <p className="text-lg font-medium text-muted-foreground">Your Image Will Appear Here</p>
                <p className="text-sm text-muted-foreground">Select niche, add post idea, and generate hook/content to see a preview.</p>
                <Image 
-                src={`https://placehold.co/600x400.png`} 
+                src={`https://placehold.co/600x600.png`} 
                 alt="Placeholder image before generation" 
                 data-ai-hint={placeholderHint}
                 width={600}
-                height={400}
+                height={600}
                 className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none" 
                />
             </div>
@@ -133,3 +133,4 @@ export default function GeneratedImage({
     </Card>
   );
 }
+

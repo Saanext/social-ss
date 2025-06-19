@@ -41,25 +41,36 @@ const generateImageFlow = ai.defineFlow(
     if (input.hookText || input.contentText) {
       let textStyleGuidance = "";
       if (input.imageStyleName) {
-        textStyleGuidance = ` The typography and style of any rendered text should complement the overall '${input.imageStyleName}' aesthetic (e.g., for 'Vintage', use vintage-style lettering; for 'Futuristic', use modern or digital-style lettering).`;
+        const styleLower = input.imageStyleName.toLowerCase();
+        if (styleLower.includes('vintage')) {
+          textStyleGuidance = ` The typography for any rendered text should have a vintage feel, complementing the '${input.imageStyleName}' style.`;
+        } else if (styleLower.includes('futuristic') || styleLower.includes('cyberpunk')) {
+          textStyleGuidance = ` The typography for any rendered text should be modern, digital, or futuristic, fitting the '${input.imageStyleName}' style.`;
+        } else if (styleLower.includes('cartoon')) {
+          textStyleGuidance = ` Any rendered text should have a playful, cartoonish, or comic-book style font, matching the '${input.imageStyleName}' aesthetic.`;
+        } else {
+          textStyleGuidance = ` If rendering text, aim for a clean, legible, and aesthetically pleasing 'magazine-style' typography that complements the overall '${input.imageStyleName}' theme.`;
+        }
+      } else {
+         textStyleGuidance = ` If rendering text, aim for a clean, legible, and aesthetically pleasing 'magazine-style' typography.`;
       }
 
       if (input.hookText && input.contentText) {
-        textElementsInstruction = `The image must visually represent or incorporate themes from the hook: "${input.hookText}" (ideally displayed prominently or as a key visual element) and the content: "${input.contentText}" (this could be represented more subtly or thematically).${textStyleGuidance}`;
+        textElementsInstruction = ` The image should prominently feature or thematically represent the hook: "${input.hookText}". It should also incorporate or represent the content: "${input.contentText}", perhaps more subtly.${textStyleGuidance}`;
       } else if (input.hookText) {
-        textElementsInstruction = `The image must visually represent or prominently incorporate the theme from the hook: "${input.hookText}".${textStyleGuidance}`;
+        textElementsInstruction = ` The image should prominently feature or thematically represent the hook: "${input.hookText}".${textStyleGuidance}`;
       } else if (input.contentText) {
-        textElementsInstruction = `The image must visually represent or incorporate the theme from the content: "${input.contentText}".${textStyleGuidance}`;
+        textElementsInstruction = ` The image should incorporate or thematically represent the content: "${input.contentText}".${textStyleGuidance}`;
       }
     }
     
-    let constructedPrompt = `Generate a visually appealing and engaging image suitable for the niche '${input.niche}', based on the post idea: "${input.postIdea}". ${textElementsInstruction}`;
+    let constructedPrompt = `Generate a visually appealing and engaging image suitable for an Instagram post (aim for a square 1:1 aspect ratio or a portrait 4:5 aspect ratio). The image should be relevant to the niche '${input.niche}' and the post idea: "${input.postIdea}". ${textElementsInstruction}`;
     
     if (input.imageStyleName) {
-      constructedPrompt += ` The overall image should be in a '${input.imageStyleName}' style.`;
+      constructedPrompt += ` The overall artistic style should be '${input.imageStyleName}'.`;
     }
     
-    constructedPrompt += ` Focus on clarity, high impact, and direct relevance to the post idea. If text elements (hook or content) are provided, the image should strongly attempt to integrate them naturally into the visual design or prominently represent their core themes. Avoid illegible or distracting text rendering; thematic representation is preferred if direct text rendering is poor. Ensure any text is legible and well-integrated.`;
+    constructedPrompt += ` Focus on high impact and direct relevance. If text elements (hook or content) are provided, the image should strongly attempt to integrate them naturally into the visual design or prominently represent their core themes. Avoid illegible, distorted, or distracting text rendering; thematic representation is preferred if direct text rendering is poor. Ensure any text is legible and well-integrated into the scene. The final image should be high quality and suitable for online sharing.`;
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-exp',
@@ -80,3 +91,4 @@ const generateImageFlow = ai.defineFlow(
     };
   }
 );
+
