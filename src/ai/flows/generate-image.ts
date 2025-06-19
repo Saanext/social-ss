@@ -16,8 +16,8 @@ const GenerateImageInputSchema = z.object({
   niche: z.string().describe('The niche for the image (e.g., web development, AI solutions).'),
   postIdea: z.string().describe('The core idea or theme for the post, used to guide image generation.'),
   imageStyleName: z.string().optional().describe('The desired artistic style for the image (e.g., Photorealistic, Cartoon).'),
-  hookText: z.string().optional().describe('Optional hook text to be incorporated or represented in the image.'),
-  contentText: z.string().optional().describe('Optional content text to be incorporated or represented in the image.'),
+  hookText: z.string().optional().describe('Optional hook text to be prominently incorporated or represented in the image.'),
+  contentText: z.string().optional().describe('Optional content text to be incorporated or represented in the image, perhaps more subtly than the hook.'),
 });
 export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;
 
@@ -39,26 +39,32 @@ const generateImageFlow = ai.defineFlow(
   async (input) => {
     let textElementsInstruction = "";
     if (input.hookText && input.contentText) {
-      textElementsInstruction = `The image must visually represent or incorporate the themes from the following hook: "${input.hookText}" and content: "${input.contentText}".`;
+      textElementsInstruction = `The image must visually represent or incorporate themes from the hook: "${input.hookText}" (ideally displayed prominently or as a key visual element) and the content: "${input.contentText}" (this could be represented more subtly or thematically).`;
     } else if (input.hookText) {
-      textElementsInstruction = `The image must visually represent or incorporate the theme from the following hook: "${input.hookText}".`;
+      textElementsInstruction = `The image must visually represent or prominently incorporate the theme from the hook: "${input.hookText}".`;
     } else if (input.contentText) {
-      textElementsInstruction = `The image must visually represent or incorporate the theme from the following content: "${input.contentText}".`;
+      textElementsInstruction = `The image must visually represent or incorporate the theme from the content: "${input.contentText}".`;
     }
     
-    let constructedPrompt = `Generate a visually appealing image suitable for the niche '${input.niche}', based on the post idea: "${input.postIdea}". ${textElementsInstruction}`;
+    let constructedPrompt = `Generate a visually appealing and engaging image suitable for the niche '${input.niche}', based on the post idea: "${input.postIdea}". ${textElementsInstruction}`;
     
     if (input.imageStyleName) {
       constructedPrompt += ` The image should be in a '${input.imageStyleName}' style.`;
     }
     
-    constructedPrompt += ` Focus on clarity, engagement, and relevance to the post idea. If text elements (hook or content) are provided, the image should strongly attempt to integrate them naturally into the visual design or prominently represent their core themes.`;
+    constructedPrompt += ` Focus on clarity, high impact, and direct relevance to the post idea. If text elements (hook or content) are provided, the image should strongly attempt to integrate them naturally into the visual design or prominently represent their core themes. Avoid illegible or distracting text rendering; thematic representation is preferred if direct text rendering is poor.`;
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-exp',
       prompt: constructedPrompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
+         safetySettings: [ // Added safety settings to be less restrictive for creative content
+          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+        ],
       },
     });
 

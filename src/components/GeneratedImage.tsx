@@ -4,18 +4,20 @@
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Download, ImageOff, Loader2, Eye } from 'lucide-react';
+import { Download, ImageOff, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface GeneratedImageProps {
   imageUrl: string | null;
-  altText: string; // This will now be based on postIdea or similar
+  altText: string;
   isLoading: boolean;
   onDownload: () => void;
   nicheName?: string;
   hookText?: string;
   contentText?: string;
   selectedStyleName?: string | null;
+  hookFontSize: number;
+  contentFontSize: number;
 }
 
 export default function GeneratedImage({ 
@@ -26,15 +28,17 @@ export default function GeneratedImage({
   nicheName,
   hookText,
   contentText,
-  selectedStyleName
+  selectedStyleName,
+  hookFontSize,
+  contentFontSize,
 }: GeneratedImageProps) {
   const placeholderHint = nicheName ? `tech ${nicheName.toLowerCase().replace(' ', '')}` : "digital art";
-  const showPreview = !isLoading && !imageUrl && (hookText || contentText || selectedStyleName);
+  const showTextPreviewCanvas = !isLoading && !imageUrl && (hookText || contentText);
 
   return (
     <Card className="w-full shadow-lg">
       <CardContent className="p-6 flex flex-col items-center space-y-6">
-        <div className="w-full aspect-video bg-muted/50 rounded-lg overflow-hidden flex items-center justify-center relative">
+        <div className="w-full aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center relative">
           {isLoading && (
             <div className="w-full h-full flex flex-col items-center justify-center space-y-2">
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -49,52 +53,59 @@ export default function GeneratedImage({
               width={600}
               height={400}
               className="object-contain w-full h-full"
-              priority
+              priority // Ensures LCP is prioritized if this is the main image
             />
           )}
-          {showPreview && (
-             <div className="p-4 sm:p-6 border border-dashed border-primary/50 rounded-md bg-background text-left w-full max-w-md max-h-full overflow-y-auto">
-              <h4 className="font-semibold mb-3 text-lg text-primary flex items-center">
-                <Eye className="mr-2 h-5 w-5" /> Content Preview
-              </h4>
-              {selectedStyleName && (
-                <div className="mb-2">
-                  <span className="text-xs font-medium uppercase text-muted-foreground">Style</span>
-                  <p className="text-sm text-foreground">{selectedStyleName}</p>
+          {showTextPreviewCanvas && (
+             <div className="w-full h-full relative bg-gray-200 dark:bg-gray-700 flex flex-col items-center justify-center p-4 overflow-hidden">
+                {/* Optional: A faint background image hint based on style or niche */}
+                <Image
+                    src={`https://placehold.co/600x400.png?text=${selectedStyleName || nicheName || 'Preview'}`}
+                    alt="Preview background"
+                    layout="fill"
+                    objectFit="cover"
+                    className="opacity-20 dark:opacity-10 absolute inset-0"
+                    data-ai-hint={`${selectedStyleName || ''} ${placeholderHint}`}
+                />
+                <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-4"> {/* Adjusted for better spacing */}
+                    {hookText && (
+                    <div
+                        style={{ fontSize: `${hookFontSize}px` }}
+                        className="p-2 bg-black/50 text-white rounded max-w-[90%] text-center break-words shadow-lg"
+                        // Simple top positioning
+                    >
+                        {hookText}
+                    </div>
+                    )}
+                    {/* Spacer if only one text element exists */}
+                    {hookText && !contentText && <div className="flex-grow"></div>}
+                    {!hookText && contentText && <div className="flex-grow"></div>}
+                    
+                    {contentText && (
+                    <div
+                        style={{ fontSize: `${contentFontSize}px` }}
+                        className="p-2 bg-black/50 text-white rounded max-w-[90%] text-center break-words shadow-lg"
+                        // Simple bottom positioning
+                    >
+                        {contentText}
+                    </div>
+                    )}
                 </div>
-              )}
-              {hookText && (
-                <div className="mb-2">
-                  <span className="text-xs font-medium uppercase text-muted-foreground">Hook</span>
-                  <p className="text-sm text-foreground whitespace-pre-wrap">{hookText}</p>
-                </div>
-              )}
-              {contentText && (
-                <div className="mb-2">
-                  <span className="text-xs font-medium uppercase text-muted-foreground">Content (Instagram)</span>
-                  <p className="text-sm text-foreground whitespace-pre-wrap">{contentText}</p>
-                </div>
-              )}
-              {!hookText && !contentText && !selectedStyleName && (
-                 <p className="text-sm text-muted-foreground">Enter details above to see a preview.</p>
-              )}
-              <p className="text-xs text-muted-foreground/80 mt-4 pt-2 border-t border-dashed">
-                This is a text-based preview. The actual image will be generated based on your post idea and selected options.
-              </p>
+                <p className="absolute bottom-1 right-1 text-xs text-muted-foreground/70 bg-background/50 px-1 rounded">Text Preview</p>
             </div>
           )}
-          {!isLoading && !imageUrl && !showPreview && (
+          {!isLoading && !imageUrl && !showTextPreviewCanvas && (
             <div className="w-full h-full flex flex-col items-center justify-center text-center p-4">
                <ImageOff className="w-24 h-24 text-muted-foreground/50 mb-4" />
                <p className="text-lg font-medium text-muted-foreground">Your Image Will Appear Here</p>
-               <p className="text-sm text-muted-foreground">Select a niche and provide a post idea to generate an image.</p>
+               <p className="text-sm text-muted-foreground">Select niche, add post idea, and generate hook/content to see a preview.</p>
                <Image 
                 src={`https://placehold.co/600x400.png`} 
                 alt="Placeholder image before generation" 
                 data-ai-hint={placeholderHint}
                 width={600}
                 height={400}
-                className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
+                className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none" // Hidden, but helps with AI hints
                />
             </div>
           )}

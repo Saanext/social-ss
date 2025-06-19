@@ -7,10 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Loader2, Wand2, ThumbsUp, MessageSquareText, Palette, SparklesIcon } from 'lucide-react';
+import { Loader2, Wand2, ThumbsUp, MessageSquareText, Palette, SparklesIcon, CaseSensitive } from 'lucide-react';
 import type { Niche } from '@/config/niches';
 import type { ImageStyle } from '@/config/styles';
 import { Separator } from '@/components/ui/separator';
+import { Slider } from "@/components/ui/slider";
+
 
 interface PromptControlsProps {
   selectedNiche: Niche | null;
@@ -28,6 +30,11 @@ interface PromptControlsProps {
   setSelectedStyle: (style: ImageStyle | null) => void;
   onGenerateHookContent: () => Promise<void>;
   isLoadingHookContent: boolean;
+
+  hookFontSize: number;
+  setHookFontSize: (size: number) => void;
+  contentFontSize: number;
+  setContentFontSize: (size: number) => void;
 }
 
 export default function PromptControls({
@@ -45,6 +52,10 @@ export default function PromptControls({
   setSelectedStyle,
   onGenerateHookContent,
   isLoadingHookContent,
+  hookFontSize,
+  setHookFontSize,
+  contentFontSize,
+  setContentFontSize,
 }: PromptControlsProps) {
   const anyLoading = isLoadingImage || isLoadingHookContent;
   const canGenerateImage = selectedNiche !== null && postIdea.trim() !== '' && !anyLoading;
@@ -107,10 +118,10 @@ export default function PromptControls({
 
         <Separator />
         
-        <div className="space-y-4">
+        <div className="space-y-6"> {/* Increased spacing for font size controls */}
           <h3 className="text-lg font-medium text-foreground">Refine Details (for Image & Preview)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Increased gap */}
+            <div className="space-y-2">
               <Label htmlFor="hookText" className="flex items-center text-sm font-medium text-foreground">
                 <ThumbsUp className="mr-2 h-4 w-4 text-muted-foreground" /> Hook Text
               </Label>
@@ -123,8 +134,23 @@ export default function PromptControls({
                 disabled={!selectedNiche || anyLoading}
                 aria-label="Hook text"
               />
+              <div className="space-y-1">
+                <Label htmlFor="hookFontSize" className="flex items-center text-xs font-medium text-muted-foreground">
+                  <CaseSensitive className="mr-1 h-3 w-3" /> Hook Font Size: {hookFontSize}px
+                </Label>
+                <Slider
+                  id="hookFontSize"
+                  min={12}
+                  max={72}
+                  step={1}
+                  value={[hookFontSize]}
+                  onValueChange={(value) => setHookFontSize(value[0])}
+                  disabled={!selectedNiche || anyLoading}
+                  aria-label="Hook font size"
+                />
+              </div>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-2">
                <Label htmlFor="imageStyle" className="flex items-center text-sm font-medium text-foreground">
                 <Palette className="mr-2 h-4 w-4 text-muted-foreground" /> Image Style
               </Label>
@@ -146,7 +172,7 @@ export default function PromptControls({
               </Select>
             </div>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label htmlFor="contentText" className="flex items-center text-sm font-medium text-foreground">
               <MessageSquareText className="mr-2 h-4 w-4 text-muted-foreground" /> Content Text (Single Line for Instagram)
             </Label>
@@ -159,6 +185,21 @@ export default function PromptControls({
               disabled={!selectedNiche || anyLoading}
               aria-label="Content text for Instagram, single line, no hashtags or emojis"
             />
+             <div className="space-y-1">
+                <Label htmlFor="contentFontSize" className="flex items-center text-xs font-medium text-muted-foreground">
+                  <CaseSensitive className="mr-1 h-3 w-3" /> Content Font Size: {contentFontSize}px
+                </Label>
+                <Slider
+                  id="contentFontSize"
+                  min={10}
+                  max={48}
+                  step={1}
+                  value={[contentFontSize]}
+                  onValueChange={(value) => setContentFontSize(value[0])}
+                  disabled={!selectedNiche || anyLoading}
+                  aria-label="Content font size"
+                />
+              </div>
           </div>
         </div>
       </CardContent>

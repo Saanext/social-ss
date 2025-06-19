@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { NICHES, type Niche } from '@/config/niches';
 import { IMAGE_STYLES, type ImageStyle } from '@/config/styles';
 import { useToast } from '@/hooks/use-toast';
-import { handleGenerateImage, handleGenerateHookContent } from '@/lib/actions'; // Removed handleSuggestPrompt
+import { handleGenerateImage, handleGenerateHookContent } from '@/lib/actions'; 
 
 import NicheSelector from './NicheSelector';
 import PromptControls from './PromptControls';
@@ -22,6 +22,9 @@ export default function NicheImageApp() {
   const [selectedStyle, setSelectedStyle] = useState<ImageStyle | null>(IMAGE_STYLES[0] || null);
   const [isLoadingHookContent, setIsLoadingHookContent] = useState(false);
 
+  const [hookFontSize, setHookFontSize] = useState<number>(32);
+  const [contentFontSize, setContentFontSize] = useState<number>(24);
+
 
   const { toast } = useToast();
 
@@ -31,10 +34,7 @@ export default function NicheImageApp() {
     setPostIdea('');
     setHookText('');
     setContentText('');
-    // No userPrompt or suggestedPrompt to reset
   };
-
-  // onSuggestPrompt and related state (isLoadingSuggestion, suggestedPrompt) are removed
 
   const onGenerateHookContent = async () => {
     if (!postIdea || !selectedNiche) {
@@ -65,8 +65,8 @@ export default function NicheImageApp() {
         niche: selectedNiche.name, 
         postIdea: postIdea,
         imageStyleName: selectedStyle?.name,
-        hookText: hookText, // Pass hookText
-        contentText: contentText // Pass contentText
+        hookText: hookText,
+        contentText: contentText
       });
       setGeneratedImageUrl(result.imageUrl);
     } catch (error) {
@@ -82,7 +82,7 @@ export default function NicheImageApp() {
     link.href = generatedImageUrl;
     
     let filename = 'generated-image';
-    if (postIdea) { // Use postIdea for filename
+    if (postIdea) {
       filename = postIdea.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').substring(0, 50) || 'custom-image';
     } else if (selectedNiche) {
       filename = selectedNiche.name.toLowerCase().replace(/\s+/g, '-') + '-image';
@@ -94,7 +94,7 @@ export default function NicheImageApp() {
     document.body.removeChild(link);
   };
   
-  const anyLoading = isLoadingImage || isLoadingHookContent; // Removed isLoadingSuggestion
+  const anyLoading = isLoadingImage || isLoadingHookContent;
 
   return (
     <div className="w-full max-w-4xl space-y-8">
@@ -107,9 +107,6 @@ export default function NicheImageApp() {
 
       <PromptControls
         selectedNiche={selectedNiche}
-        // userPrompt and setUserPrompt removed
-        // suggestedPrompt and onSuggestPrompt removed
-        // isLoadingSuggestion removed
         onGenerateImage={onGenerateImage}
         isLoadingImage={isLoadingImage}
         
@@ -124,17 +121,23 @@ export default function NicheImageApp() {
         setSelectedStyle={setSelectedStyle}
         onGenerateHookContent={onGenerateHookContent}
         isLoadingHookContent={isLoadingHookContent}
+        hookFontSize={hookFontSize}
+        setHookFontSize={setHookFontSize}
+        contentFontSize={contentFontSize}
+        setContentFontSize={setContentFontSize}
       />
 
       <GeneratedImage
         imageUrl={generatedImageUrl}
-        altText={postIdea || 'AI generated image based on post idea'} // Updated altText
+        altText={postIdea || 'AI generated image based on post idea'}
         isLoading={isLoadingImage}
         onDownload={handleDownloadImage}
         nicheName={selectedNiche?.name}
         hookText={hookText}
         contentText={contentText}
         selectedStyleName={selectedStyle?.name || null}
+        hookFontSize={hookFontSize}
+        contentFontSize={contentFontSize}
       />
     </div>
   );
