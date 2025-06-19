@@ -38,28 +38,35 @@ const generateImageFlow = ai.defineFlow(
   },
   async (input) => {
     let textElementsInstruction = "";
-    if (input.hookText && input.contentText) {
-      textElementsInstruction = `The image must visually represent or incorporate themes from the hook: "${input.hookText}" (ideally displayed prominently or as a key visual element) and the content: "${input.contentText}" (this could be represented more subtly or thematically).`;
-    } else if (input.hookText) {
-      textElementsInstruction = `The image must visually represent or prominently incorporate the theme from the hook: "${input.hookText}".`;
-    } else if (input.contentText) {
-      textElementsInstruction = `The image must visually represent or incorporate the theme from the content: "${input.contentText}".`;
+    if (input.hookText || input.contentText) {
+      let textStyleGuidance = "";
+      if (input.imageStyleName) {
+        textStyleGuidance = ` The typography and style of any rendered text should complement the overall '${input.imageStyleName}' aesthetic (e.g., for 'Vintage', use vintage-style lettering; for 'Futuristic', use modern or digital-style lettering).`;
+      }
+
+      if (input.hookText && input.contentText) {
+        textElementsInstruction = `The image must visually represent or incorporate themes from the hook: "${input.hookText}" (ideally displayed prominently or as a key visual element) and the content: "${input.contentText}" (this could be represented more subtly or thematically).${textStyleGuidance}`;
+      } else if (input.hookText) {
+        textElementsInstruction = `The image must visually represent or prominently incorporate the theme from the hook: "${input.hookText}".${textStyleGuidance}`;
+      } else if (input.contentText) {
+        textElementsInstruction = `The image must visually represent or incorporate the theme from the content: "${input.contentText}".${textStyleGuidance}`;
+      }
     }
     
     let constructedPrompt = `Generate a visually appealing and engaging image suitable for the niche '${input.niche}', based on the post idea: "${input.postIdea}". ${textElementsInstruction}`;
     
     if (input.imageStyleName) {
-      constructedPrompt += ` The image should be in a '${input.imageStyleName}' style.`;
+      constructedPrompt += ` The overall image should be in a '${input.imageStyleName}' style.`;
     }
     
-    constructedPrompt += ` Focus on clarity, high impact, and direct relevance to the post idea. If text elements (hook or content) are provided, the image should strongly attempt to integrate them naturally into the visual design or prominently represent their core themes. Avoid illegible or distracting text rendering; thematic representation is preferred if direct text rendering is poor.`;
+    constructedPrompt += ` Focus on clarity, high impact, and direct relevance to the post idea. If text elements (hook or content) are provided, the image should strongly attempt to integrate them naturally into the visual design or prominently represent their core themes. Avoid illegible or distracting text rendering; thematic representation is preferred if direct text rendering is poor. Ensure any text is legible and well-integrated.`;
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-exp',
       prompt: constructedPrompt,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
-         safetySettings: [ // Added safety settings to be less restrictive for creative content
+         safetySettings: [ 
           { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
           { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
           { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },

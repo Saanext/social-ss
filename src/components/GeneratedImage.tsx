@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Download, ImageOff, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 interface GeneratedImageProps {
   imageUrl: string | null;
@@ -35,6 +36,18 @@ export default function GeneratedImage({
   const placeholderHint = nicheName ? `tech ${nicheName.toLowerCase().replace(' ', '')}` : "digital art";
   const showTextPreviewCanvas = !isLoading && !imageUrl && (hookText || contentText);
 
+  let textPreviewFontFamilyClass = 'font-sans'; // Default to sans-serif
+
+  if (selectedStyleName) {
+    const styleLower = selectedStyleName.toLowerCase();
+    if (styleLower.includes('vintage') || styleLower.includes('impressionistic') || styleLower.includes('organic')) {
+      textPreviewFontFamilyClass = 'font-serif';
+    } else if (styleLower.includes('futuristic') || styleLower.includes('cyberpunk') || styleLower.includes('minimalist') || styleLower.includes('abstract')) {
+      textPreviewFontFamilyClass = 'font-mono'; // Monospace can give a techy/minimalist feel
+    }
+  }
+
+
   return (
     <Card className="w-full shadow-lg">
       <CardContent className="p-6 flex flex-col items-center space-y-6">
@@ -53,12 +66,11 @@ export default function GeneratedImage({
               width={600}
               height={400}
               className="object-contain w-full h-full"
-              priority // Ensures LCP is prioritized if this is the main image
+              priority 
             />
           )}
           {showTextPreviewCanvas && (
-             <div className="w-full h-full relative bg-gray-200 dark:bg-gray-700 flex flex-col items-center justify-center p-4 overflow-hidden">
-                {/* Optional: A faint background image hint based on style or niche */}
+             <div className={cn("w-full h-full relative bg-gray-200 dark:bg-gray-700 flex flex-col items-center justify-center p-4 overflow-hidden", textPreviewFontFamilyClass)}>
                 <Image
                     src={`https://placehold.co/600x400.png?text=${selectedStyleName || nicheName || 'Preview'}`}
                     alt="Preview background"
@@ -67,17 +79,16 @@ export default function GeneratedImage({
                     className="opacity-20 dark:opacity-10 absolute inset-0"
                     data-ai-hint={`${selectedStyleName || ''} ${placeholderHint}`}
                 />
-                <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-4"> {/* Adjusted for better spacing */}
+                <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-4"> 
                     {hookText && (
                     <div
                         style={{ fontSize: `${hookFontSize}px` }}
                         className="p-2 bg-black/50 text-white rounded max-w-[90%] text-center break-words shadow-lg"
-                        // Simple top positioning
                     >
                         {hookText}
                     </div>
                     )}
-                    {/* Spacer if only one text element exists */}
+                    
                     {hookText && !contentText && <div className="flex-grow"></div>}
                     {!hookText && contentText && <div className="flex-grow"></div>}
                     
@@ -85,7 +96,6 @@ export default function GeneratedImage({
                     <div
                         style={{ fontSize: `${contentFontSize}px` }}
                         className="p-2 bg-black/50 text-white rounded max-w-[90%] text-center break-words shadow-lg"
-                        // Simple bottom positioning
                     >
                         {contentText}
                     </div>
@@ -105,7 +115,7 @@ export default function GeneratedImage({
                 data-ai-hint={placeholderHint}
                 width={600}
                 height={400}
-                className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none" // Hidden, but helps with AI hints
+                className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none" 
                />
             </div>
           )}
