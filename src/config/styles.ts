@@ -120,5 +120,14 @@ export const IMAGE_STYLES: ImageStyle[] = [
     look: 'Extremely clean layouts with abundant whitespace, sharp typographic hierarchies (often large, bold sans-serif fonts), grid-based alignment, and subtle, functional icons.',
     colorScheme: 'Monochromatic (shades of grey, black, white) with a single, carefully chosen accent color.',
     bestFor: 'Quotes, brand identity, product callouts, high-end tech or design services.',
+  },
+  {
+    id: 'brutalist-design',
+    name: 'Brutalist Design',
+    description: 'Stark typography, monochrome, ugly-on-purpose.',
+    look: 'Brutalist design featuring stark typography, monochrome color palette, raw unstyled elements, heavy fonts, and an "ugly-on-purpose" aesthetic.',
+    colorScheme: 'Black, white, and grey with harsh blocks of color.',
+    bestFor: 'Edgy branding, underground creators.',
   }
 ];
+
