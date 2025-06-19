@@ -6,6 +6,7 @@ export interface ImageStyle {
   look?: string;        // For AI prompt if different from name
   colorScheme?: string; // For AI prompt
   bestFor?: string;     // For UI display
+  keywords?: string; // For AI prompt to reinforce style
 }
 
 export const IMAGE_STYLES: ImageStyle[] = [
@@ -128,6 +129,15 @@ export const IMAGE_STYLES: ImageStyle[] = [
     look: 'Brutalist design featuring stark typography, monochrome color palette, raw unstyled elements, heavy fonts, and an "ugly-on-purpose" aesthetic.',
     colorScheme: 'Black, white, and grey with harsh blocks of color.',
     bestFor: 'Edgy branding, underground creators.',
+    keywords: 'brutalism, raw, unstyled, heavy font.',
+  },
+  {
+    id: 'aura-mystic-glow',
+    name: 'Aura / Mystic Glow',
+    description: 'Gradient spheres, ethereal overlays, cosmic textures.',
+    look: 'Gradient spheres, ethereal overlays, cosmic textures, soft light effects.',
+    colorScheme: 'Purples, pinks, deep blues, often with iridescent or glowing highlights, glass-like transparency effects.',
+    bestFor: 'Wellness, astrology, spiritual content, healing modalities, product showcases needing an ethereal feel.',
+    keywords: 'aura, glow, light flare, spiritual, cosmic, ethereal, mystical, gradient sphere',
   }
 ];
-
