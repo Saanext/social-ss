@@ -19,7 +19,7 @@ export type GenerateHookContentInput = z.infer<typeof GenerateHookContentInputSc
 
 const GenerateHookContentOutputSchema = z.object({
   hook: z.string().describe('A catchy hook generated based on the post idea.'),
-  content: z.string().describe('Concise and impactful content (a few short sentences or phrases) for an Instagram post, based on the post idea.'),
+  content: z.string().describe('A single, concise sentence for an Instagram post, without hashtags or emojis, based on the post idea.'),
 });
 export type GenerateHookContentOutput = z.infer<typeof GenerateHookContentOutputSchema>;
 
@@ -37,12 +37,12 @@ You are focusing on content for the '{{{niche}}}' niche.
 {{/if}}
 Based on the following post idea, generate:
 1. A highly engaging and catchy hook.
-2. Concise and impactful content (a few short sentences or phrases) perfectly suited for an Instagram caption that grabs attention.
+2. A single, concise, and impactful sentence for an Instagram caption that grabs attention. This sentence must not contain any hashtags or emojis.
 
 Post Idea: {{{postIdea}}}
 
 Output the hook and content in the specified format.
-Ensure the hook is attention-grabbing and the content is concise, powerful, and Instagram-ready.
+Ensure the hook is attention-grabbing and the content is a single, powerful, Instagram-ready sentence without hashtags or emojis.
 Aim for good impact with the content.`,
 });
 

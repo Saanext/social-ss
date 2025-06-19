@@ -7,14 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Loader2, Wand2, ThumbsUp, MessageSquareText, Palette, SparklesIcon } from 'lucide-react'; // Removed Lightbulb
+import { Loader2, Wand2, ThumbsUp, MessageSquareText, Palette, SparklesIcon } from 'lucide-react';
 import type { Niche } from '@/config/niches';
 import type { ImageStyle } from '@/config/styles';
 import { Separator } from '@/components/ui/separator';
 
 interface PromptControlsProps {
   selectedNiche: Niche | null;
-  // userPrompt, setUserPrompt, suggestedPrompt, onSuggestPrompt, isLoadingSuggestion removed
   onGenerateImage: () => Promise<void>;
   isLoadingImage: boolean;
 
@@ -33,7 +32,6 @@ interface PromptControlsProps {
 
 export default function PromptControls({
   selectedNiche,
-  // userPrompt, setUserPrompt, suggestedPrompt, onSuggestPrompt, isLoadingSuggestion removed
   onGenerateImage,
   isLoadingImage,
   postIdea,
@@ -48,9 +46,8 @@ export default function PromptControls({
   onGenerateHookContent,
   isLoadingHookContent,
 }: PromptControlsProps) {
-  const anyLoading = isLoadingImage || isLoadingHookContent; // isLoadingSuggestion removed
-  // canSuggestCorePrompt removed
-  const canGenerateImage = selectedNiche !== null && postIdea.trim() !== '' && !anyLoading; // Depends on postIdea now
+  const anyLoading = isLoadingImage || isLoadingHookContent;
+  const canGenerateImage = selectedNiche !== null && postIdea.trim() !== '' && !anyLoading;
   const canGenerateHookContent = selectedNiche !== null && postIdea.trim() !== '' && !anyLoading;
 
   const handleStyleChange = (styleId: string) => {
@@ -78,14 +75,13 @@ export default function PromptControls({
             placeholder={selectedNiche ? `e.g., For ${selectedNiche.name}: 'The impact of quantum computing on data security'` : "e.g., 'The future of AI in web design', 'How to triple your leads in 30 days'"}
             value={postIdea}
             onChange={(e) => setPostIdea(e.target.value)}
-            rows={3} // Increased rows for better visibility
+            rows={3}
             className="focus:ring-accent focus:border-accent"
             disabled={!selectedNiche || anyLoading}
             aria-label="Post idea for AI hook, content, and image generation"
           />
         </div>
         
-        {/* Core Image Prompt Textarea and Suggestion logic removed */}
 
         <Button
             onClick={onGenerateHookContent}
@@ -152,17 +148,16 @@ export default function PromptControls({
           </div>
           <div className="space-y-1">
             <Label htmlFor="contentText" className="flex items-center text-sm font-medium text-foreground">
-              <MessageSquareText className="mr-2 h-4 w-4 text-muted-foreground" /> Content Text (Short & Catchy for Instagram)
+              <MessageSquareText className="mr-2 h-4 w-4 text-muted-foreground" /> Content Text (Single Line for Instagram)
             </Label>
-            <Textarea
+            <Input
               id="contentText"
               placeholder="e.g., Supporting details (AI can generate this for Instagram)"
               value={contentText}
               onChange={(e) => setContentText(e.target.value)}
-              rows={3}
               className="focus:ring-accent focus:border-accent"
               disabled={!selectedNiche || anyLoading}
-              aria-label="Content text for Instagram"
+              aria-label="Content text for Instagram, single line, no hashtags or emojis"
             />
           </div>
         </div>
@@ -170,7 +165,7 @@ export default function PromptControls({
       <CardFooter className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
         <Button
           onClick={onGenerateImage}
-          disabled={!canGenerateImage} // Now depends on postIdea
+          disabled={!canGenerateImage}
           className="w-full sm:w-auto bg-accent hover:bg-accent/80 text-accent-foreground"
           aria-label="Generate image"
         >
