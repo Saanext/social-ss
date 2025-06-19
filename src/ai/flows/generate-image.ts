@@ -16,8 +16,8 @@ const GenerateImageInputSchema = z.object({
   niche: z.string().describe('The niche for the image (e.g., web development, AI solutions).'),
   postIdea: z.string().describe('The core idea or theme for the post, used to guide image generation.'),
   imageStyleName: z.string().optional().describe('The desired artistic style for the image (e.g., Photorealistic, Cartoon).'),
-  hookText: z.string().optional().describe('Optional hook text to be prominently incorporated or represented in the image.'),
-  contentText: z.string().optional().describe('Optional content text to be incorporated or represented in the image, perhaps more subtly than the hook.'),
+  hookText: z.string().optional().describe('Optional hook text to be prominently incorporated or represented in the image. Strive for perfect spelling and legibility if rendered.'),
+  contentText: z.string().optional().describe('Optional content text to be incorporated or represented in the image, perhaps more subtly than the hook. Strive for perfect spelling and legibility if rendered.'),
 });
 export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;
 
@@ -38,39 +38,46 @@ const generateImageFlow = ai.defineFlow(
   },
   async (input) => {
     let textElementsInstruction = "";
-    if (input.hookText || input.contentText) {
-      let textStyleGuidance = "";
-      if (input.imageStyleName) {
+    let typographyStyleGuidance = `The typography for any rendered text should be clean, legible, and aesthetically pleasing, complementing the overall visual style.`;
+
+    if (input.imageStyleName) {
         const styleLower = input.imageStyleName.toLowerCase();
         if (styleLower.includes('vintage')) {
-          textStyleGuidance = ` The typography for any rendered text should have a vintage feel, complementing the '${input.imageStyleName}' style.`;
+          typographyStyleGuidance = `The typography for any rendered text should have a vintage feel, complementing the '${input.imageStyleName}' style.`;
         } else if (styleLower.includes('futuristic') || styleLower.includes('cyberpunk')) {
-          textStyleGuidance = ` The typography for any rendered text should be modern, digital, or futuristic, fitting the '${input.imageStyleName}' style.`;
+          typographyStyleGuidance = `The typography for any rendered text should be modern, digital, or futuristic, fitting the '${input.imageStyleName}' style.`;
         } else if (styleLower.includes('cartoon')) {
-          textStyleGuidance = ` Any rendered text should have a playful, cartoonish, or comic-book style font, matching the '${input.imageStyleName}' aesthetic.`;
+          typographyStyleGuidance = `Any rendered text should have a playful, cartoonish, or comic-book style font, matching the '${input.imageStyleName}' aesthetic.`;
+        } else if (styleLower.includes('minimalist') || styleLower.includes('abstract')) {
+           typographyStyleGuidance = `Any rendered text should be clean, minimalist, and highly legible, suiting the '${input.imageStyleName}' style.`;
         } else {
-          textStyleGuidance = ` If rendering text, aim for a clean, legible, and aesthetically pleasing 'magazine-style' typography that complements the overall '${input.imageStyleName}' theme.`;
+          typographyStyleGuidance = `Aim for a clean, legible, and aesthetically pleasing 'magazine-style' typography that complements the overall '${input.imageStyleName}' theme for any rendered text.`;
         }
-      } else {
-         textStyleGuidance = ` If rendering text, aim for a clean, legible, and aesthetically pleasing 'magazine-style' typography.`;
-      }
+    }
 
+
+    if (input.hookText || input.contentText) {
       if (input.hookText && input.contentText) {
-        textElementsInstruction = ` The image should prominently feature or thematically represent the hook: "${input.hookText}". It should also incorporate or represent the content: "${input.contentText}", perhaps more subtly.${textStyleGuidance}`;
+        textElementsInstruction = ` The image should prominently feature or thematically represent the hook: "${input.hookText}". It should also incorporate or represent the content: "${input.contentText}", perhaps more subtly.`;
       } else if (input.hookText) {
-        textElementsInstruction = ` The image should prominently feature or thematically represent the hook: "${input.hookText}".${textStyleGuidance}`;
+        textElementsInstruction = ` The image should prominently feature or thematically represent the hook: "${input.hookText}".`;
       } else if (input.contentText) {
-        textElementsInstruction = ` The image should incorporate or thematically represent the content: "${input.contentText}".${textStyleGuidance}`;
+        textElementsInstruction = ` The image should incorporate or thematically represent the content: "${input.contentText}".`;
       }
+      textElementsInstruction += ` ${typographyStyleGuidance}`;
     }
     
-    let constructedPrompt = `Generate a visually appealing and engaging image suitable for an Instagram post (aim for a square 1:1 aspect ratio or a portrait 4:5 aspect ratio). The image should be relevant to the niche '${input.niche}' and the post idea: "${input.postIdea}". ${textElementsInstruction}`;
+    let constructedPrompt = `Generate a visually appealing and engaging image suitable for an Instagram post (aim for a square 1:1 aspect ratio or a portrait 4:5 aspect ratio). The image should be relevant to the niche '${input.niche}' and the post idea: "${input.postIdea}".`;
     
     if (input.imageStyleName) {
       constructedPrompt += ` The overall artistic style should be '${input.imageStyleName}'.`;
     }
+
+    constructedPrompt += ` The overall aesthetic should be very modern, high-impact, and align with cutting-edge social media post trends anticipated for 2025. Focus on direct relevance to the niche and post idea.`;
     
-    constructedPrompt += ` Focus on high impact and direct relevance. If text elements (hook or content) are provided, the image should strongly attempt to integrate them naturally into the visual design or prominently represent their core themes. Avoid illegible, distorted, or distracting text rendering; thematic representation is preferred if direct text rendering is poor. Ensure any text is legible and well-integrated into the scene. The final image should be high quality and suitable for online sharing.`;
+    constructedPrompt += textElementsInstruction;
+    
+    constructedPrompt += ` CRITICALLY IMPORTANT: If text elements (hook or content) are provided, the image MUST attempt to integrate them. Strive for PERFECT SPELLING and HIGH LEGIBILITY of any rendered text. The text should be naturally and creatively incorporated into the visual design or prominently represent its core themes. If direct text rendering results in spelling errors, illegibility, or distortion, prioritize clear thematic representation of the text's message over poor quality text rendering. The final image must be high quality and visually compelling for online sharing.`;
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-exp',
